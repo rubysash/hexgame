@@ -260,20 +260,27 @@ class UIPanel:
         
         # Calculate tooltip size
         max_width = max(self.tooltip_font.size(line)[0] for line in lines if line)
+        tooltip_width = max_width + 20
         tooltip_height = len(lines) * 20 + 10
         
-        # Position tooltip
-        tooltip_x = mouse_x + 10
-        tooltip_y = mouse_y - tooltip_height - 10
+        # Position tooltip (default: right and above mouse)
+        tooltip_x = mouse_x + 15
+        tooltip_y = mouse_y - tooltip_height - 15
         
-        # Keep on screen
-        if tooltip_x + max_width + 20 > Config.SCREEN_WIDTH:
-            tooltip_x = mouse_x - max_width - 30
-        if tooltip_y < 50:
-            tooltip_y = mouse_y + 10
+        # Keep tooltip on screen - adjust horizontal position
+        if tooltip_x + tooltip_width > Config.SCREEN_WIDTH:
+            tooltip_x = mouse_x - tooltip_width - 15  # Move to left side of mouse
+        if tooltip_x < 0:
+            tooltip_x = 5  # Minimum margin from left edge
+        
+        # Keep tooltip on screen - adjust vertical position
+        if tooltip_y < 45:  # Account for top UI panel
+            tooltip_y = mouse_y + 15  # Move below mouse
+        if tooltip_y + tooltip_height > Config.SCREEN_HEIGHT:
+            tooltip_y = Config.SCREEN_HEIGHT - tooltip_height - 5  # Move up from bottom
         
         # Draw background
-        tooltip_rect = pygame.Rect(tooltip_x, tooltip_y, max_width + 20, tooltip_height)
+        tooltip_rect = pygame.Rect(tooltip_x, tooltip_y, tooltip_width, tooltip_height)
         pygame.draw.rect(self.screen, (10, 10, 10, 240), tooltip_rect)
         pygame.draw.rect(self.screen, (70, 130, 180), tooltip_rect, 2)
         

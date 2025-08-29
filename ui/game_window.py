@@ -259,9 +259,8 @@ class HexGridGame:
         # Draw visible hexes
         visible_hexes = self.viewport.get_visible_hexes()
         for hex_obj in visible_hexes:
-            # Don't show coordinates if settlement names are shown
-            show_coords = not (hex_obj.has_settlement and self.renderer.show_settlement_names)
-            self.renderer.draw_hex(self.screen, hex_obj, self.camera_x, self.camera_y, show_coords)
+            # Always show coordinates since settlement names are disabled by default
+            self.renderer.draw_hex(self.screen, hex_obj, self.camera_x, self.camera_y, show_coords=True)
         
         # Get world statistics for UI
         world_stats = self.world.get_world_statistics()

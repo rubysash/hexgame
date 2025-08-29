@@ -27,7 +27,7 @@ class HexRenderer:
     def init_fonts(self):
         """Initialize pygame fonts (must be called after pygame.init())"""
         pygame.font.init()
-        self.font = pygame.font.Font(None, 16)
+        self.font = pygame.font.Font(None, 12)  # Reduced from 16 to 12
         self.small_font = pygame.font.Font(None, 12)
         self.settlement_font = pygame.font.Font(None, 14)
         
@@ -54,10 +54,13 @@ class HexRenderer:
         pygame.draw.polygon(surface, border_color, points, 2)
     
     def draw_settlement_icon(self, surface: pygame.Surface, center_x: float, 
-                           center_y: float, settlement_type: SettlementType):
+                        center_y: float, settlement_type: SettlementType):
         """Draw settlement icon using geometric shapes"""
         if not self.show_settlement_icons:
             return
+        
+        # Move icon slightly above center
+        icon_y = center_y - 8
         
         # Settlement colors
         if settlement_type in [SettlementType.FARMSTEAD, SettlementType.HAMLET]:
@@ -89,19 +92,19 @@ class HexRenderer:
         if settlement_type.name.startswith('RUINS'):
             # Ruins: broken square outline
             points = [
-                (center_x - size, center_y - size),
-                (center_x + size - 2, center_y - size + 1),
-                (center_x + size, center_y + size - 2),
-                (center_x - size + 1, center_y + size)
+                (center_x - size, icon_y - size),
+                (center_x + size - 2, icon_y - size + 1),
+                (center_x + size, icon_y + size - 2),
+                (center_x - size + 1, icon_y + size)
             ]
             pygame.draw.polygon(surface, color, points, 2)  # Just outline
             
         elif settlement_type == SettlementType.WATCHTOWER:
             # Watchtower: triangle
             points = [
-                (center_x, center_y - size),
-                (center_x - size//2, center_y + size//2),
-                (center_x + size//2, center_y + size//2)
+                (center_x, icon_y - size),
+                (center_x - size//2, icon_y + size//2),
+                (center_x + size//2, icon_y + size//2)
             ]
             pygame.draw.polygon(surface, color, points)
             pygame.draw.polygon(surface, (0, 0, 0), points, 1)
@@ -110,46 +113,46 @@ class HexRenderer:
             # Monastery: cross
             # Vertical bar
             pygame.draw.rect(surface, color, 
-                           (center_x - 1, center_y - size, 3, size * 2))
+                        (center_x - 1, icon_y - size, 3, size * 2))
             # Horizontal bar
             pygame.draw.rect(surface, color,
-                           (center_x - size//2, center_y - 1, size, 3))
+                        (center_x - size//2, icon_y - 1, size, 3))
             
         elif settlement_type == SettlementType.CITY:
             # City: large filled square
             pygame.draw.rect(surface, color, 
-                           (center_x - size//2, center_y - size//2, size, size))
+                        (center_x - size//2, icon_y - size//2, size, size))
             pygame.draw.rect(surface, (0, 0, 0),
-                           (center_x - size//2, center_y - size//2, size, size), 1)
+                        (center_x - size//2, icon_y - size//2, size, size), 1)
             
         elif settlement_type == SettlementType.TOWN:
             # Town: medium filled rectangle
             pygame.draw.rect(surface, color, 
-                           (center_x - size//2, center_y - size//3, size, size//1.5))
+                        (center_x - size//2, icon_y - size//3, size, size//1.5))
             pygame.draw.rect(surface, (0, 0, 0),
-                           (center_x - size//2, center_y - size//3, size, size//1.5), 1)
+                        (center_x - size//2, icon_y - size//3, size, size//1.5), 1)
             
         elif settlement_type == SettlementType.VILLAGE:
             # Village: filled circle
-            pygame.draw.circle(surface, color, (int(center_x), int(center_y)), size)
-            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(center_y)), size, 1)
+            pygame.draw.circle(surface, color, (int(center_x), int(icon_y)), size)
+            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(icon_y)), size, 1)
             
         elif settlement_type in [SettlementType.LOGGING_CAMP, SettlementType.MINING_CAMP]:
             # Camps: diamond shape
             points = [
-                (center_x, center_y - size),
-                (center_x + size, center_y),
-                (center_x, center_y + size),
-                (center_x - size, center_y)
+                (center_x, icon_y - size),
+                (center_x + size, icon_y),
+                (center_x, icon_y + size),
+                (center_x - size, icon_y)
             ]
             pygame.draw.polygon(surface, color, points)
             pygame.draw.polygon(surface, (0, 0, 0), points, 1)
             
         else:  # FARMSTEAD, HAMLET
             # Small settlements: small filled circle
-            pygame.draw.circle(surface, color, (int(center_x), int(center_y)), size)
-            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(center_y)), size, 1)
-    
+            pygame.draw.circle(surface, color, (int(center_x), int(icon_y)), size)
+            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(icon_y)), size, 1)
+
     def draw_settlement_name(self, surface: pygame.Surface, center_x: float,
                            center_y: float, settlement_name: str, settlement_type: SettlementType):
         """Draw settlement name"""
@@ -198,11 +201,13 @@ class HexRenderer:
             self.draw_settlement_icon(surface, screen_x, screen_y, 
                                     hex_obj.settlement_data.settlement_type)
         
-        # Draw coordinates - always show for non-settlement hexes, or when settlement names are off
+        # Draw coordinates below center - always show for non-settlement hexes, or when settlement names are off
         if show_coords and self.font:
             text = f"{hex_obj.q},{hex_obj.r}"
             text_surface = self.font.render(text, True, (0, 0, 0))
-            text_rect = text_surface.get_rect(center=(screen_x, screen_y))
+            # Position text below center
+            text_y = screen_y + 10
+            text_rect = text_surface.get_rect(center=(screen_x, text_y))
             surface.blit(text_surface, text_rect)
         
         # Draw exploration indicator if explored
@@ -212,7 +217,7 @@ class HexRenderer:
                 indicator = "•" * level
                 text_surface = self.small_font.render(indicator, True, (255, 215, 0))  # Gold
                 surface.blit(text_surface, (screen_x - 10, screen_y - self.hex_size + 5))
-    
+
     def toggle_settlement_names(self):
         """Toggle display of settlement names"""
         self.show_settlement_names = not self.show_settlement_names

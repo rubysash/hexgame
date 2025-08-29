@@ -73,8 +73,8 @@ class SettlementGenerator:
         """Generate appropriate name for settlement"""
         random.seed(self.world_seed + coord.q * 7919 + coord.r * 7907 + 123)
         
-        prefixes = TERRAIN_PREFIXES.get(terrain, ["New", "Old", "Little"])
-        terrain_suffixes = TERRAIN_SUFFIXES.get(terrain, ["place", "burg", "ton"])
+        prefixes = TERRAIN_PREFIXES.get(terrain, TERRAIN_PREFIXES)
+        terrain_suffixes = TERRAIN_SUFFIXES.get(terrain, TERRAIN_SUFFIXES)
         
         # Sometimes use settlement type suffix instead
         if random.random() < 0.4 and settlement_type in SETTLEMENT_SUFFIXES:
@@ -82,7 +82,7 @@ class SettlementGenerator:
         else:
             suffixes = terrain_suffixes
         
-        name = f"{random.choice(prefixes)}{random.choice(suffixes)}"
+        name = f"{random.choice(prefixes)} {random.choice(suffixes)}"
         
         random.seed()  # Reset seed
         return name

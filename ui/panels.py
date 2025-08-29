@@ -60,14 +60,14 @@ class UIPanel:
     
     def draw_legend(self):
         """Draw terrain type legend"""
-        legend_x = Config.SCREEN_WIDTH - 250
-        legend_y = Config.SCREEN_HEIGHT - 300
+        legend_x = Config.SCREEN_WIDTH - 210
+        legend_y = Config.SCREEN_HEIGHT - 450
         
-        # Background
+        # Background - made larger
         pygame.draw.rect(self.screen, Config.UI_PANEL_COLOR,
-                        (legend_x - 10, legend_y - 10, 240, 290))
+                        (legend_x - 10, legend_y - 10, 220, 450))  # Increased width and height
         pygame.draw.rect(self.screen, Config.UI_BORDER_COLOR,
-                        (legend_x - 10, legend_y - 10, 240, 290), 2)
+                        (legend_x - 10, legend_y - 10, 220, 450), 2)
         
         # Title
         title = self.ui_font.render("Terrain Types", True, Config.TEXT_COLOR)
@@ -79,9 +79,9 @@ class UIPanel:
             
             # Color sample
             pygame.draw.rect(self.screen, terrain_type.color, 
-                           (legend_x, y_pos, 20, 20))
+                        (legend_x, y_pos, 20, 20))
             pygame.draw.rect(self.screen, Config.UI_BORDER_COLOR,
-                           (legend_x, y_pos, 20, 20), 1)
+                        (legend_x, y_pos, 20, 20), 1)
             
             # Name and movement cost
             text = f"{terrain_type.display_name}"
@@ -95,26 +95,44 @@ class UIPanel:
         title = self.ui_font.render("Settlements", True, Config.TEXT_COLOR)
         self.screen.blit(title, (legend_x, settlement_y))
         
-        # Key settlement types
+        # Complete settlement types with simple ASCII symbols
         key_settlements = [
-            (SettlementType.FARMSTEAD, "◦", "Farmstead/Hamlet"),
-            (SettlementType.VILLAGE, "●", "Village"),
-            (SettlementType.TOWN, "■", "Town"),
-            (SettlementType.CITY, "▣", "City"),
-            (SettlementType.RUINS_VILLAGE, "◇", "Ruins"),
+            (SettlementType.FARMSTEAD, "o", "Farmstead"),
+            (SettlementType.HAMLET, "o", "Hamlet"), 
+            (SettlementType.VILLAGE, "O", "Village"),
+            (SettlementType.TOWN, "#", "Town"),
+            (SettlementType.CITY, "@", "City"),
+            (SettlementType.LOGGING_CAMP, "^", "Logging Camp"),
+            (SettlementType.MINING_CAMP, "*", "Mining Camp"),
+            (SettlementType.MONASTERY, "+", "Monastery"),
+            (SettlementType.WATCHTOWER, "T", "Watchtower"),
+            (SettlementType.RUINS_VILLAGE, "r", "Village Ruins"),
+            (SettlementType.RUINS_KEEP, "R", "Keep Ruins"),
+            (SettlementType.ANCIENT_RUINS, "?", "Ancient Ruins"),
         ]
         
         for i, (settlement_type, symbol, name) in enumerate(key_settlements):
-            y_pos = settlement_y + 25 + i * 18
+            y_pos = settlement_y + 25 + i * 15  # Reduced spacing from 18 to 15
             
-            # Symbol
-            symbol_text = self.legend_font.render(symbol, True, (200, 200, 200))
+            # Symbol with color coding
+            if settlement_type.name.startswith('RUINS'):
+                symbol_color = (105, 105, 105)  # Gray for ruins
+            elif settlement_type in [SettlementType.CITY, SettlementType.TOWN]:
+                symbol_color = (255, 255, 255)  # White for major settlements
+            elif settlement_type == SettlementType.MONASTERY:
+                symbol_color = (147, 112, 219)  # Light purple for monastery
+            elif settlement_type == SettlementType.WATCHTOWER:
+                symbol_color = (255, 100, 100)  # Light red for watchtower
+            else:
+                symbol_color = (200, 200, 200)  # Light gray for others
+                
+            symbol_text = self.legend_font.render(symbol, True, symbol_color)
             self.screen.blit(symbol_text, (legend_x, y_pos))
             
             # Name
             name_text = self.legend_font.render(name, True, (180, 180, 180))
             self.screen.blit(name_text, (legend_x + 20, y_pos))
-    
+
     def draw_settlement_summary(self, world_stats: Dict):
         """Draw settlement summary panel"""
         panel_x = 10
@@ -148,8 +166,9 @@ class UIPanel:
         
         # Largest city
         largest_city = world_stats.get('largest_city')
+        largest_city_xy = world_stats.get('largest_city_xy')
         if largest_city:
-            text = self.settlement_font.render(f"Largest City: {largest_city}", True, (220, 220, 100))
+            text = self.settlement_font.render(f"Largest City: {largest_city} {largest_city_xy}", True, (220, 220, 100))
             self.screen.blit(text, (panel_x + 10, panel_y + y_offset))
             y_offset += 20
         

@@ -121,56 +121,56 @@ TERRAIN_PREFIXES = {
     ]
 }
 
-# Terrain-based name suffixes  
+# Terrain-Based Name Suffixes  
 TERRAIN_SUFFIXES = {
     TerrainType.PLAINS: [
-        "field", "meadow", "haven", "vale", "stead", "moor", "lea", "flat", "pasture", "heath",
-        "acre", "croft", "down", "plain", "steppe", "wold", "reach", "ward", "bank", "steadings",
-        "pastoral", "farm", "lands", "commons", "ham", "wick", "bury", "holm", "gard", "steadholm",
-        "holt", "staddle", "glebe", "hollow", "park", "ranch", "grange", "manor", "run", "steadwell",
-        "town", "steadgate", "low", "rise", "furlong", "outlands", "fen", "knoll", "brae"
+        "Field", "Meadow", "Haven", "Vale", "Stead", "Moor", "Lea", "Flat", "Pasture", "Heath",
+        "Acre", "Croft", "Down", "Plain", "Steppe", "Wold", "Reach", "Ward", "Bank", "Steadings",
+        "Pastoral", "Farm", "Lands", "Commons", "Ham", "Wick", "Bury", "Holm", "Gard", "Steadholm",
+        "Staddle", "Glebe", "Hollow", "Park", "Ranch", "Grange", "Manor", "Run", "Steadwell",
+        "Town", "Steadgate", "Low", "Rise", "Furlong", "Outlands", "Fen", "Knoll", "Brae"
     ],
 
     TerrainType.FOREST: [
-        "wood", "grove", "glade", "hollow", "thicket", "brake", "shaw", "copse", "holt", "spinney",
-        "boscage", "chase", "frith", "den", "hurst", "shawden", "glens", "shade", "clearing", "stand",
-        "timber", "wilds", "warren", "burrow", "dell", "fen", "marshwood", "briar", "thornwood", "hedge",
-        "mire", "holtwood", "lair", "fallow", "watch", "fastness", "woodlands", "brambles", "overgrowth",
-        "roots", "underwood", "deepwood", "sylva", "groveland", "twilight", "sward", "feywood", "elderwood"
+        "Wood", "Grove", "Glade", "Hollow", "Thicket", "Brake", "Shaw", "Copse", "Spinney",
+        "Boscage", "Chase", "Frith", "Den", "Hurst", "Shawden", "Glens", "Shade", "Clearing", "Stand",
+        "Timber", "Wilds", "Warren", "Burrow", "Dell", "Fen", "Marshwood", "Briar", "Thornwood", "Hedge",
+        "Mire", "Straightwood", "Lair", "Fallow", "Watch", "Fastness", "Woodlands", "Brambles", "Overgrowth",
+        "Roots", "Underwood", "Deepwood", "Sylva", "Groveland", "Twilight", "Sward", "Feywood", "Elderwood"
     ],
 
     TerrainType.HILLS: [
-        "hill", "ridge", "crest", "tor", "mount", "down", "fell", "barrow", "knoll", "tump",
-        "brae", "bluff", "escarp", "rise", "heights", "slopes", "crag", "ledge", "overlook", "scaur",
-        "rock", "stones", "head", "copsehill", "dun", "fort", "butte", "mound", "knap", "cairn",
-        "watch", "seat", "brow", "slope", "cliff", "perch", "spine", "outcrop", "ridgeway", "upland",
-        "heaf", "drift", "uplift", "ledgehold", "wildrise", "torfell", "ridgehold", "barrows", "summit"
+        "Hill", "Ridge", "Crest", "Tor", "Mount", "Down", "Fell", "Barrow", "Knoll", "Tump",
+        "Brae", "Bluff", "Escarp", "Rise", "Heights", "Slopes", "Crag", "Ledge", "Overlook", "Scaur",
+        "Rock", "Stones", "Head", "Copsehill", "Dun", "Fort", "Butte", "Mound", "Knap", "Cairn",
+        "Watch", "Seat", "Brow", "Slope", "Cliff", "Perch", "Spine", "Outcrop", "Ridgeway", "Upland",
+        "Heaf", "Drift", "Uplift", "Ledgehold", "Wildrise", "Torfell", "Ridgehold", "Barrows", "Summit"
     ],
 
     TerrainType.MOUNTAINS: [
-        "peak", "fell", "crag", "stone", "hold", "gate", "pass", "spire", "pinnacle", "ridge",
-        "summit", "crown", "crest", "horn", "head", "fang", "tooth", "spiregate", "tor", "berg",
-        "rock", "buttress", "fastness", "fort", "bastion", "citadel", "keep", "dome", "spirehold",
-        "spirefell", "highlands", "palisade", "spirewall", "rampart", "overlook", "ridgekeep", "barrier",
-        "heights", "massif", "wildpeak", "gatecrag", "mount", "spirestone", "ridgefort", "stonewall",
-        "frosthold", "stormpeak", "dragonspire", "ancienthold"
+        "Peak", "Fell", "Crag", "Stone", "Hold", "Gate", "Pass", "Spire", "Pinnacle", "Ridge",
+        "Summit", "Crown", "Crest", "Horn", "Head", "Fang", "Tooth", "Spiregate", "Tor", "Berg",
+        "Rock", "Buttress", "Fastness", "Fort", "Bastion", "Citadel", "Keep", "Dome", "Spirehold",
+        "Spirefell", "Highlands", "Palisade", "Spirewall", "Rampart", "Overlook", "Ridgekeep", "Barrier",
+        "Heights", "Massif", "Wildpeak", "Gatecrag", "Mount", "Spirestone", "Ridgefort", "Stonewall",
+        "Frosthold", "Stormpeak", "Dragonspire", "Ancienthold"
     ],
 
     TerrainType.WATER: [
-        "ford", "bridge", "port", "bay", "crossing", "mouth", "dock", "wharf", "harbor", "haven",
-        "jetty", "quay", "marsh", "lagoon", "estuary", "delta", "inlet", "gulf", "loch", "mere",
-        "brook", "stream", "run", "falls", "cascade", "spring", "fountain", "rapids", "shoals", "pool",
-        "reach", "channel", "strait", "current", "deep", "shallows", "sands", "beach", "shore", "cliffs",
-        "isle", "islet", "atoll", "reef", "sound", "flow", "wash", "drift"
+        "Ford", "Bridge", "Port", "Bay", "Crossing", "Mouth", "Dock", "Wharf", "Harbor", "Haven",
+        "Jetty", "Quay", "Marsh", "Lagoon", "Estuary", "Delta", "Inlet", "Gulf", "Loch", "Mere",
+        "Brook", "Stream", "Run", "Falls", "Cascade", "Spring", "Fountain", "Rapids", "Shoals", "Pool",
+        "Reach", "Channel", "Strait", "Current", "Deep", "Shallows", "Sands", "Beach", "Shore", "Cliffs",
+        "Isle", "Islet", "Atoll", "Reef", "Sound", "Flow", "Wash", "Drift"
     ],
 
     TerrainType.DESERT: [
-        "well", "springs", "rest", "sanctuary", "refuge", "shade", "rock", "gulch", "dune", "waste",
-        "expanse", "flat", "salt", "basin", "sink", "pan", "gorge", "bluff", "cliff", "ridge",
-        "hearth", "outcrop", "oasis", "mirage", "mirrors", "winds", "sunlands", "glass", "burn",
-        "crust", "sands", "dunes", "stone", "drylands", "steppe", "arid", "lowlands", "scarp",
-        "barren", "scour", "ravine", "scrub", "drought", "ash", "ashes", "hollow", "scar", "spire",
-        "fane", "bones"
+        "Well", "Springs", "Rest", "Sanctuary", "Refuge", "Shade", "Rock", "Gulch", "Dune", "Waste",
+        "Expanse", "Flat", "Salt", "Basin", "Sink", "Pan", "Gorge", "Bluff", "Cliff", "Ridge",
+        "Hearth", "Outcrop", "Oasis", "Mirage", "Mirrors", "Winds", "Sunlands", "Glass", "Burn",
+        "Crust", "Sands", "Dunes", "Stone", "Drylands", "Steppe", "Arid", "Lowlands", "Scarp",
+        "Barren", "Scour", "Ravine", "Scrub", "Drought", "Ash", "Ashes", "Hollow", "Scar", "Spire",
+        "Fane", "Bones"
     ]
 }
 
@@ -195,9 +195,9 @@ SETTLEMENT_SUFFIXES = {
     SettlementType.VILLAGE: [
         "Village", "Borough", "Green", "Commons", "Ton", "Sted", "Wick", "Worth", "Wich", "Ford",
         "Ham", "Ferry", "Market", "Yard", "Field", "Lea", "Thwaite", "Kirk", "Minster", "Ness",
-        "Brook", "Beck", "Pool", "Well", "Cross", "Howe", "Row", "Hill", "Holt", "Shaw",
+        "Brook", "Beck", "Pool", "Well", "Cross", "Howe", "Row", "Hill", "Weed", "Shaw",
         "Wood", "Hatch", "Bridge", "Fell", "Barrow", "Stone", "Gate", "Wall", "Hall", "Stead",
-        "Croft", "Holme", "Dale", "Down", "Bend", "Spring", "Burn", "Grange"
+        "Croft", "Holme", "Dale", "Down", "Bend", "Spring", "Burn", "Grange", "Wood"
     ],
 
     SettlementType.TOWN: [

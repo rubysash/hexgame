@@ -132,6 +132,7 @@ class World:
             'settlements_by_type': {k: len(v) for k, v in self.settlements_by_type.items()},
             'terrain_distribution': {},
             'largest_city': None,
+            'largest_city_xy' : None,
             'total_population': 0
         }
         
@@ -139,6 +140,7 @@ class World:
         terrain_counts = {}
         largest_population = 0
         largest_city = None
+        largest_city_xy = None
         total_pop = 0
         
         for hex_obj in self.hexes.values():
@@ -151,9 +153,11 @@ class World:
                 if pop > largest_population:
                     largest_population = pop
                     largest_city = hex_obj.settlement_data.name
+                    largest_city_xy = (hex_obj.q, hex_obj.r) 
         
         stats['terrain_distribution'] = terrain_counts
         stats['largest_city'] = largest_city
+        stats['largest_city_xy'] = largest_city_xy
         stats['total_population'] = total_pop
         
         return stats

@@ -15,7 +15,7 @@ class TerrainType(Enum):
     HILLS = ("Hills", (205, 133, 63), "Rolling hills with moderate elevation", 20, 2.0)
     MOUNTAINS = ("Mountains", (139, 115, 85), "Towering peaks difficult to traverse", 10, 3.0)
     WATER = ("Water", (70, 130, 180), "Lakes and rivers providing fresh water", 10, None)
-    DESERT = ("Desert", (244, 164, 96), "Arid wasteland with scarce resources", 5, 1.5)
+    DESERT = ("Desert", (255, 255, 244), "Arid wasteland with scarce resources", 5, 1.5)
     
     def __init__(self, display_name, color, description, weight, movement_cost):
         self.display_name = display_name

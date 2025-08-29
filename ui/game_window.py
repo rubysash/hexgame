@@ -36,7 +36,7 @@ class HexGridGame:
         self.renderer.init_fonts()
         
         # UI components
-        self.ui_panel = UIPanel(self.screen)
+        self.ui_panel = UIPanel(self.screen, self.renderer)
         
         # Camera position (in pixels, centered on origin)
         self.camera_x = Config.SCREEN_WIDTH // 2

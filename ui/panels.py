@@ -7,12 +7,16 @@ from typing import Optional, Dict, List
 from config import Config
 from core.hex_grid import HexCoordinate
 from data.models import Hex, TerrainType, SettlementType
+from generation.config_data import SETTLEMENT_SYMBOLS, SETTLEMENT_COLORS
 
 class UIPanel:
     """Manages UI panels and information display"""
     
-    def __init__(self, screen: pygame.Surface):
+    def __init__(self, screen: pygame.Surface, renderer=None):
         self.screen = screen
+        self.renderer = renderer  # Reference to renderer for shared fonts
+        
+        # Initialize standard fonts
         self.ui_font = pygame.font.Font(None, 24)
         self.tooltip_font = pygame.font.Font(None, 18)
         self.legend_font = pygame.font.Font(None, 16)
@@ -22,6 +26,16 @@ class UIPanel:
         self.show_legend = True
         self.show_settlement_panel = True
         self.show_statistics = False
+        
+    def set_renderer(self, renderer):
+        """Set renderer reference after initialization for shared font access"""
+        self.renderer = renderer
+        
+    def get_unicode_font(self):
+        """Get the Unicode-capable font from renderer, with fallback"""
+        if self.renderer and hasattr(self.renderer, 'unicode_font') and self.renderer.unicode_font:
+            return self.renderer.unicode_font
+        return self.legend_font  # Fallback to default font
         
     def draw(self, viewport_center: HexCoordinate, hex_count: int, 
              mouse_hex: Optional[Hex] = None, world_stats: Optional[Dict] = None):
@@ -59,15 +73,15 @@ class UIPanel:
         self.screen.blit(text, (Config.SCREEN_WIDTH - 350, 10))
     
     def draw_legend(self):
-        """Draw terrain type legend"""
+        """Draw terrain type legend with proper Unicode font support"""
         legend_x = Config.SCREEN_WIDTH - 210
         legend_y = Config.SCREEN_HEIGHT - 450
         
-        # Background - made larger
+        # Background
         pygame.draw.rect(self.screen, Config.UI_PANEL_COLOR,
-                        (legend_x - 10, legend_y - 10, 220, 450))  # Increased width and height
+                        (legend_x - 10, legend_y - 10, 200, 440))
         pygame.draw.rect(self.screen, Config.UI_BORDER_COLOR,
-                        (legend_x - 10, legend_y - 10, 220, 450), 2)
+                        (legend_x - 10, legend_y - 10, 200, 440), 2)
         
         # Title
         title = self.ui_font.render("Terrain Types", True, Config.TEXT_COLOR)
@@ -79,9 +93,9 @@ class UIPanel:
             
             # Color sample
             pygame.draw.rect(self.screen, terrain_type.color, 
-                        (legend_x, y_pos, 20, 20))
+                           (legend_x, y_pos, 20, 20))
             pygame.draw.rect(self.screen, Config.UI_BORDER_COLOR,
-                        (legend_x, y_pos, 20, 20), 1)
+                           (legend_x, y_pos, 20, 20), 1)
             
             # Name and movement cost
             text = f"{terrain_type.display_name}"
@@ -95,38 +109,44 @@ class UIPanel:
         title = self.ui_font.render("Settlements", True, Config.TEXT_COLOR)
         self.screen.blit(title, (legend_x, settlement_y))
         
-        # Complete settlement types with simple ASCII symbols
-        key_settlements = [
-            (SettlementType.FARMSTEAD, "o", "Farmstead"),
-            (SettlementType.HAMLET, "o", "Hamlet"), 
-            (SettlementType.VILLAGE, "O", "Village"),
-            (SettlementType.TOWN, "#", "Town"),
-            (SettlementType.CITY, "@", "City"),
-            (SettlementType.LOGGING_CAMP, "^", "Logging Camp"),
-            (SettlementType.MINING_CAMP, "*", "Mining Camp"),
-            (SettlementType.MONASTERY, "+", "Monastery"),
-            (SettlementType.WATCHTOWER, "T", "Watchtower"),
-            (SettlementType.RUINS_VILLAGE, "r", "Village Ruins"),
-            (SettlementType.RUINS_KEEP, "R", "Keep Ruins"),
-            (SettlementType.ANCIENT_RUINS, "?", "Ancient Ruins"),
+        # Get Unicode font for settlement symbols
+        unicode_font = self.get_unicode_font()
+        
+        # Settlement types
+        settlement_types = [
+            (SettlementType.FARMSTEAD, "Farmstead"),
+            (SettlementType.HAMLET, "Hamlet"), 
+            (SettlementType.VILLAGE, "Village"),
+            (SettlementType.TOWN, "Town"),
+            (SettlementType.CITY, "City"),
+            (SettlementType.LOGGING_CAMP, "Logging Camp"),
+            (SettlementType.MINING_CAMP, "Mining Camp"),
+            (SettlementType.MONASTERY, "Monastery"),
+            (SettlementType.WATCHTOWER, "Watchtower"),
+            (SettlementType.RUINS_VILLAGE, "Village Ruins"),
+            (SettlementType.RUINS_KEEP, "Keep Ruins"),
+            (SettlementType.ANCIENT_RUINS, "Ancient Ruins"),
         ]
         
-        for i, (settlement_type, symbol, name) in enumerate(key_settlements):
-            y_pos = settlement_y + 25 + i * 15  # Reduced spacing from 18 to 15
+        for i, (settlement_type, name) in enumerate(settlement_types):
+            y_pos = settlement_y + 25 + i * 15
             
-            # Symbol with color coding
-            if settlement_type.name.startswith('RUINS'):
-                symbol_color = (105, 105, 105)  # Gray for ruins
-            elif settlement_type in [SettlementType.CITY, SettlementType.TOWN]:
-                symbol_color = (255, 255, 255)  # White for major settlements
-            elif settlement_type == SettlementType.MONASTERY:
-                symbol_color = (147, 112, 219)  # Light purple for monastery
-            elif settlement_type == SettlementType.WATCHTOWER:
-                symbol_color = (255, 100, 100)  # Light red for watchtower
-            else:
-                symbol_color = (200, 200, 200)  # Light gray for others
-                
-            symbol_text = self.legend_font.render(symbol, True, symbol_color)
+            # Get symbol and color from config
+            symbol = SETTLEMENT_SYMBOLS.get(settlement_type, "?")
+            symbol_color = SETTLEMENT_COLORS.get(settlement_type, (200, 200, 200))
+            
+            # Try to render symbol with Unicode font, fall back if needed
+            try:
+                symbol_text = unicode_font.render(symbol, True, symbol_color)
+                if symbol_text.get_width() == 0:
+                    # Symbol didn't render, use ASCII fallback
+                    fallback_symbol = "*" if settlement_type != SettlementType.FARMSTEAD else "o"
+                    symbol_text = self.legend_font.render(fallback_symbol, True, symbol_color)
+            except Exception:
+                # Any error, use simple fallback
+                fallback_symbol = "*"
+                symbol_text = self.legend_font.render(fallback_symbol, True, symbol_color)
+            
             self.screen.blit(symbol_text, (legend_x, y_pos))
             
             # Name
@@ -166,9 +186,8 @@ class UIPanel:
         
         # Largest city
         largest_city = world_stats.get('largest_city')
-        largest_city_xy = world_stats.get('largest_city_xy')
         if largest_city:
-            text = self.settlement_font.render(f"Largest City: {largest_city} {largest_city_xy}", True, (220, 220, 100))
+            text = self.settlement_font.render(f"Largest City: {largest_city}", True, (220, 220, 100))
             self.screen.blit(text, (panel_x + 10, panel_y + y_offset))
             y_offset += 20
         
@@ -324,5 +343,7 @@ class UIPanel:
         self.show_settlement_panel = not self.show_settlement_panel
     
     def toggle_statistics(self):
+        """Toggle statistics panel visibility"""
+        self.show_statistics = not self.show_statistics
         """Toggle statistics panel visibility"""
         self.show_statistics = not self.show_statistics

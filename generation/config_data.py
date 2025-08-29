@@ -4,6 +4,37 @@ generation/config_data.py - Settlement and Terrain Generation data
 
 from data.models import TerrainType, SettlementType
 
+# Settlement symbol and color mapping
+SETTLEMENT_SYMBOLS = {
+    SettlementType.FARMSTEAD: "¤",   # small enclosed mark, evokes a homestead or plot of land
+    SettlementType.HAMLET: "h",      # lowercase, simple and small
+    SettlementType.VILLAGE: "v",     # lowercase, slightly larger grouping
+    SettlementType.TOWN: "◎",        # circle with center, hub of activity
+    SettlementType.CITY: "✪",        # star inside circle, major stronghold
+    SettlementType.LOGGING_CAMP: "λ", # tree-like shape for logging
+    SettlementType.MINING_CAMP: "⛏", # pickaxe symbol, mining
+    SettlementType.MONASTERY: "†",   # cross, religious settlement
+    SettlementType.WATCHTOWER: "♖",  # rook, tower/fortified structure
+    SettlementType.RUINS_VILLAGE: "≈", # broken lines, scattered ruins
+    SettlementType.RUINS_KEEP: "☓",    # crossed box, destroyed keep
+    SettlementType.ANCIENT_RUINS: "⚑", # tattered flag, ancient fallen site
+}
+
+SETTLEMENT_COLORS = {
+    SettlementType.FARMSTEAD: (200, 200, 200),      # Light gray
+    SettlementType.HAMLET: (200, 200, 200),         # Light gray
+    SettlementType.VILLAGE: (200, 200, 200),        # Light gray
+    SettlementType.TOWN: (255, 255, 255),           # White for major settlements
+    SettlementType.CITY: (255, 255, 255),           # White for major settlements
+    SettlementType.LOGGING_CAMP: (184, 134, 11),    # Dark goldenrod for camps
+    SettlementType.MINING_CAMP: (184, 134, 11),     # Dark goldenrod for camps
+    SettlementType.MONASTERY: (147, 112, 219),      # Light purple
+    SettlementType.WATCHTOWER: (255, 100, 100),     # Light red
+    SettlementType.RUINS_VILLAGE: (105, 105, 105),  # Gray for ruins
+    SettlementType.RUINS_KEEP: (105, 105, 105),     # Gray for ruins
+    SettlementType.ANCIENT_RUINS: (105, 105, 105),  # Gray for ruins
+}
+
 # Settlement density by terrain (chance per hex)
 SETTLEMENT_CHANCES = {
     TerrainType.PLAINS: 0.15,     # 15% chance in plains hexes

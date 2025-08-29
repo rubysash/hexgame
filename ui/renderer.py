@@ -7,6 +7,32 @@ import math
 from typing import Tuple
 from core.hex_grid import HexCoordinate
 from data.models import Hex, SettlementType
+from generation.config_data import SETTLEMENT_SYMBOLS, SETTLEMENT_COLORS
+
+# Add this to your main game initialization for debugging
+def debug_fonts(self):
+    """Debug helper to see what's available"""
+    print("=== FONT DEBUG INFO ===")
+    
+    # List all available system fonts
+    available_fonts = pygame.font.get_fonts()
+    print(f"System has {len(available_fonts)} fonts available")
+    
+    # Look for common Unicode fonts
+    unicode_fonts = ['dejavu', 'noto', 'arial', 'liberation', 'segoe']
+    found_unicode_fonts = []
+    
+    for font_family in unicode_fonts:
+        matches = [f for f in available_fonts if font_family in f.lower()]
+        if matches:
+            found_unicode_fonts.extend(matches)
+            print(f"Found {font_family} variants: {matches}")
+    
+    if not found_unicode_fonts:
+        print("⚠ No common Unicode fonts found")
+        print("Consider installing: DejaVu Sans, Noto Sans, or Liberation Sans")
+    
+    print("=" * 23)
 
 class HexRenderer:
     """Handles rendering of hexes to pygame surface"""
@@ -25,11 +51,181 @@ class HexRenderer:
         self.show_population = False
         
     def init_fonts(self):
-        """Initialize pygame fonts (must be called after pygame.init())"""
+        """Initialize pygame fonts with Unicode support and comprehensive symbol testing"""
         pygame.font.init()
-        self.font = pygame.font.Font(None, 12)  # Reduced from 16 to 12
-        self.small_font = pygame.font.Font(None, 12)
-        self.settlement_font = pygame.font.Font(None, 14)
+        
+        # Import here to avoid circular imports
+        from generation.config_data import SETTLEMENT_SYMBOLS
+        
+        # Try to load fonts with good Unicode support
+        unicode_fonts = [
+            'DejaVu Sans',      # Good Unicode coverage
+            'Arial Unicode MS', # Windows
+            'Noto Sans',        # Google Noto fonts
+            'Liberation Sans',  # Linux
+            'Segoe UI Symbol',  # Windows symbols
+            'Apple Symbols',    # macOS
+            'Arial',            # Fallback
+        ]
+        
+        # Test all settlement symbols with each font
+        self.unicode_font = None
+        best_font_name = None
+        best_success_count = 0
+        
+        for font_name in unicode_fonts:
+            try:
+                test_font = pygame.font.SysFont(font_name, 14)
+                if test_font is None:
+                    print(f"Font '{font_name}' not found on system")
+                    continue
+                    
+                successful_symbols = []
+                failed_symbols = []
+                
+                # Test each settlement symbol
+                for settlement_type, symbol in SETTLEMENT_SYMBOLS.items():
+                    try:
+                        test_surface = test_font.render(symbol, True, (255, 255, 255))
+                        if test_surface.get_width() > 0:
+                            successful_symbols.append((settlement_type.name, symbol))
+                        else:
+                            failed_symbols.append((settlement_type.name, symbol))
+                    except Exception as e:
+                        failed_symbols.append((settlement_type.name, symbol, str(e)))
+                
+                success_count = len(successful_symbols)
+                total_count = len(SETTLEMENT_SYMBOLS)
+                
+                print(f"Font '{font_name}': {success_count}/{total_count} symbols rendered successfully")
+                
+                # Log failed symbols for this font
+                if failed_symbols:
+                    print(f"  Failed symbols for '{font_name}':")
+                    for failure in failed_symbols:
+                        if len(failure) == 3:  # Has error message
+                            settlement_name, symbol, error = failure
+                            print(f"    {settlement_name}: '{symbol}' (Error: {error})")
+                        else:
+                            settlement_name, symbol = failure
+                            print(f"    {settlement_name}: '{symbol}' (Width = 0, likely not supported)")
+                
+                # Keep track of the best font so far
+                if success_count > best_success_count:
+                    best_success_count = success_count
+                    best_font_name = font_name
+                    self.unicode_font = test_font
+                    
+                # If we found a font that renders all symbols, use it
+                if success_count == total_count:
+                    print(f"✓ Perfect match found: '{font_name}' renders all settlement symbols!")
+                    break
+                    
+            except Exception as e:
+                print(f"Error testing font '{font_name}': {e}")
+                continue
+        
+        # Final font selection and reporting
+        if self.unicode_font:
+            print(f"\n✓ Selected font: '{best_font_name}' ({best_success_count}/{len(SETTLEMENT_SYMBOLS)} symbols)")
+            if best_success_count < len(SETTLEMENT_SYMBOLS):
+                print(f"⚠ Warning: {len(SETTLEMENT_SYMBOLS) - best_success_count} symbols may not display correctly")
+                print("  Consider using ASCII fallback symbols or installing better Unicode fonts")
+        else:
+            print("\n✗ No suitable Unicode font found!")
+            print("  All settlement symbols will use ASCII fallbacks")
+            print("  Consider installing 'DejaVu Sans' or 'Noto Sans' fonts for better symbol support")
+        
+        # Set up standard fonts
+        self.font = pygame.font.Font(None, 12)
+        self.small_font = pygame.font.Font(None, 12) 
+        self.settlement_font = self.unicode_font if self.unicode_font else pygame.font.Font(None, 14)
+        
+        # Test the final selected font one more time for user feedback
+        if self.unicode_font:
+            print("\nFinal symbol test with selected font:")
+            for settlement_type, symbol in SETTLEMENT_SYMBOLS.items():
+                try:
+                    test_surface = self.unicode_font.render(symbol, True, (255, 255, 255))
+                    status = "✓" if test_surface.get_width() > 0 else "✗"
+                    print(f"  {status} {settlement_type.name}: '{symbol}'")
+                except Exception as e:
+                    print(f"  ✗ {settlement_type.name}: '{symbol}' (Error: {e})")
+
+    def get_font_info(self):
+        """Get information about available fonts (debugging helper)"""
+        available_fonts = pygame.font.get_fonts()
+        print(f"\nAvailable system fonts ({len(available_fonts)}):")
+        for font in sorted(available_fonts)[:20]:  # Show first 20
+            print(f"  {font}")
+        if len(available_fonts) > 20:
+            print(f"  ... and {len(available_fonts) - 20} more")
+        
+        return available_fonts
+
+    def draw_settlement_icon(self, surface: pygame.Surface, center_x: float, 
+                        center_y: float, settlement_type: SettlementType, population: int = 0):
+        """Draw settlement icon using Unicode or ASCII fallback"""
+        if not self.show_settlement_icons:
+            return
+        
+        # Get symbol and color from config
+        symbol = SETTLEMENT_SYMBOLS.get(settlement_type, "?")
+        symbol_color = SETTLEMENT_COLORS.get(settlement_type, (200, 200, 200))
+        
+        # Size scaling
+        base_size = 12
+        if settlement_type == SettlementType.CITY:
+            font_size = min(20, base_size + population // 500)
+        elif settlement_type == SettlementType.TOWN:
+            font_size = min(18, base_size + population // 200)
+        elif settlement_type == SettlementType.VILLAGE:
+            font_size = min(16, base_size + population // 100)
+        elif settlement_type in [SettlementType.HAMLET, SettlementType.FARMSTEAD]:
+            font_size = max(10, base_size + population // 20)
+        elif settlement_type.name.startswith('RUINS'):
+            font_size = 11
+        else:
+            font_size = 14
+        
+        # Choose font based on symbol complexity
+        if self.unicode_font and len(symbol.encode('utf-8')) > 1:
+            # Use Unicode font for complex symbols
+            try:
+                icon_font = pygame.font.SysFont(self.unicode_font.get_fonts()[0], font_size)
+            except:
+                icon_font = self.unicode_font
+        else:
+            # Use default font for simple ASCII
+            try:
+                icon_font = pygame.font.Font(None, font_size)
+            except:
+                icon_font = self.settlement_font or self.font
+        
+        # Move icon slightly above center
+        icon_y = center_y - 8
+        
+        # Test if symbol renders properly
+        try:
+            text_surface = icon_font.render(symbol, True, symbol_color)
+            if text_surface.get_width() == 0:
+                # Symbol didn't render, use fallback
+                fallback_symbol = "*" if settlement_type != SettlementType.FARMSTEAD else "o"
+                text_surface = icon_font.render(fallback_symbol, True, symbol_color)
+        except:
+            # Fallback for any rendering error
+            fallback_symbol = "*"
+            text_surface = self.font.render(fallback_symbol, True, symbol_color)
+        
+        text_rect = text_surface.get_rect(center=(int(center_x), int(icon_y)))
+        
+        # Add subtle background for better visibility
+        bg_rect = text_rect.copy()
+        bg_rect.inflate_ip(2, 1)
+        pygame.draw.rect(surface, (0, 0, 0, 80), bg_rect)
+        
+        # Draw the symbol
+        surface.blit(text_surface, text_rect)
         
     def hex_to_pixel(self, coord: HexCoordinate) -> Tuple[float, float]:
         """Convert hex coordinates to pixel coordinates"""
@@ -53,106 +249,6 @@ class HexRenderer:
         pygame.draw.polygon(surface, color, points)
         pygame.draw.polygon(surface, border_color, points, 2)
     
-    def draw_settlement_icon(self, surface: pygame.Surface, center_x: float, 
-                        center_y: float, settlement_type: SettlementType):
-        """Draw settlement icon using geometric shapes"""
-        if not self.show_settlement_icons:
-            return
-        
-        # Move icon slightly above center
-        icon_y = center_y - 8
-        
-        # Settlement colors
-        if settlement_type in [SettlementType.FARMSTEAD, SettlementType.HAMLET]:
-            color = (139, 69, 19)  # Brown
-            size = 4
-        elif settlement_type == SettlementType.VILLAGE:
-            color = (160, 82, 45)  # Saddle brown
-            size = 6
-        elif settlement_type == SettlementType.TOWN:
-            color = (105, 105, 105)  # Gray
-            size = 8
-        elif settlement_type == SettlementType.CITY:
-            color = (70, 70, 70)  # Dark gray
-            size = 12
-        elif settlement_type in [SettlementType.LOGGING_CAMP, SettlementType.MINING_CAMP]:
-            color = (184, 134, 11)  # Dark goldenrod
-            size = 5
-        elif settlement_type == SettlementType.MONASTERY:
-            color = (75, 0, 130)  # Indigo
-            size = 6
-        elif settlement_type == SettlementType.WATCHTOWER:
-            color = (128, 0, 0)  # Maroon
-            size = 4
-        else:  # Ruins
-            color = (105, 105, 105)  # Gray
-            size = 4
-        
-        # Draw based on settlement type
-        if settlement_type.name.startswith('RUINS'):
-            # Ruins: broken square outline
-            points = [
-                (center_x - size, icon_y - size),
-                (center_x + size - 2, icon_y - size + 1),
-                (center_x + size, icon_y + size - 2),
-                (center_x - size + 1, icon_y + size)
-            ]
-            pygame.draw.polygon(surface, color, points, 2)  # Just outline
-            
-        elif settlement_type == SettlementType.WATCHTOWER:
-            # Watchtower: triangle
-            points = [
-                (center_x, icon_y - size),
-                (center_x - size//2, icon_y + size//2),
-                (center_x + size//2, icon_y + size//2)
-            ]
-            pygame.draw.polygon(surface, color, points)
-            pygame.draw.polygon(surface, (0, 0, 0), points, 1)
-            
-        elif settlement_type == SettlementType.MONASTERY:
-            # Monastery: cross
-            # Vertical bar
-            pygame.draw.rect(surface, color, 
-                        (center_x - 1, icon_y - size, 3, size * 2))
-            # Horizontal bar
-            pygame.draw.rect(surface, color,
-                        (center_x - size//2, icon_y - 1, size, 3))
-            
-        elif settlement_type == SettlementType.CITY:
-            # City: large filled square
-            pygame.draw.rect(surface, color, 
-                        (center_x - size//2, icon_y - size//2, size, size))
-            pygame.draw.rect(surface, (0, 0, 0),
-                        (center_x - size//2, icon_y - size//2, size, size), 1)
-            
-        elif settlement_type == SettlementType.TOWN:
-            # Town: medium filled rectangle
-            pygame.draw.rect(surface, color, 
-                        (center_x - size//2, icon_y - size//3, size, size//1.5))
-            pygame.draw.rect(surface, (0, 0, 0),
-                        (center_x - size//2, icon_y - size//3, size, size//1.5), 1)
-            
-        elif settlement_type == SettlementType.VILLAGE:
-            # Village: filled circle
-            pygame.draw.circle(surface, color, (int(center_x), int(icon_y)), size)
-            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(icon_y)), size, 1)
-            
-        elif settlement_type in [SettlementType.LOGGING_CAMP, SettlementType.MINING_CAMP]:
-            # Camps: diamond shape
-            points = [
-                (center_x, icon_y - size),
-                (center_x + size, icon_y),
-                (center_x, icon_y + size),
-                (center_x - size, icon_y)
-            ]
-            pygame.draw.polygon(surface, color, points)
-            pygame.draw.polygon(surface, (0, 0, 0), points, 1)
-            
-        else:  # FARMSTEAD, HAMLET
-            # Small settlements: small filled circle
-            pygame.draw.circle(surface, color, (int(center_x), int(icon_y)), size)
-            pygame.draw.circle(surface, (0, 0, 0), (int(center_x), int(icon_y)), size, 1)
-
     def draw_settlement_name(self, surface: pygame.Surface, center_x: float,
                            center_y: float, settlement_name: str, settlement_type: SettlementType):
         """Draw settlement name"""

@@ -144,11 +144,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# General Python stuff
-*.cfg
-Scripts/*
-Include/*
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -210,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# General Python/James Stff
+*.cfg
+Scripts/*
+Include/*
+gitnotes.md

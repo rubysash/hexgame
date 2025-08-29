@@ -1,6 +1,8 @@
 # Core Concept
 This is a hex-based exploration and role-playing game. The world is divided into hexagonal tiles that players move through, explore, and interact with. Each hex stores terrain, encounters, resources, and NPC data. The game is built to blend procedural generation (terrain, rivers, settlements, encounters) with structured rules (movement, exploration, combat) and narrative AI (descriptions, dialogue, story events). GURPS rules are used for combat and character mechanics.
 
+![gurps hex game demo](https://github.com/rubysash/hexgame/blob/main/mvp-demo.png?raw=true)
+
 # How It Works
 ## 1. World Structure
 - The world is a grid of hexes generated on demand.

@@ -1,3 +1,38 @@
+# Core Concept
+This is a hex-based exploration and role-playing game. The world is divided into hexagonal tiles that players move through, explore, and interact with. Each hex stores terrain, encounters, resources, and NPC data. The game is built to blend procedural generation (terrain, rivers, settlements, encounters) with structured rules (movement, exploration, combat) and narrative AI (descriptions, dialogue, story events). GURPS rules are used for combat and character mechanics.
+
+# How It Works
+## 1. World Structure
+- The world is a grid of hexes generated on demand.
+- Hexes are saved to JSON files, keeping memory light via a viewport system that only loads nearby tiles.
+- Terrain generation follows logical geographic rules (mountains cluster, rivers flow downhill, deserts avoid water, etc.).
+
+## 2. Exploration and Movement
+- The player controls a party that moves hex to hex.
+- Movement cost depends on terrain type (plains are easier than mountains).
+- Exploration has levels: seeing a hex, surface exploration, or thorough discovery.
+
+## 3. Encounters and NPCs
+- Each hex can trigger encounters, rolled from terrain-based tables.
+- NPCs are generated with motivations and roles; unique NPCs persist while organizational roles respawn replacements.
+
+## 4. AI Integration
+- AI generates descriptive text for hexes, encounters, and NPC dialogue.
+- A story engine maintains consistency across the campaign.
+
+## 5. Combat and Mechanics
+- Combat uses a turn-based GURPS-lite system for resolution.
+- Exploration, movement, and encounters all tie back into GURPS mechanics.
+
+## 6. User Interface
+- A map viewport shows the hex grid with zoom/pan.
+- A control panel displays party stats, current hex info, and encounter options.
+- A combat view handles tactical fights separately.
+
+# Final Product
+The finished game is a sandbox hex-crawl RPG where players guide a party across a dynamically generated world. Exploration reveals terrain, resources, settlements, and dangers. Terrain and geography feel realistic due to rule-based generation. AI provides rich, adaptive descriptions and NPC interactions, keeping the world immersive and fresh. GURPS rules add tactical depth to encounters and combat. The re
+
+---
 # Core Architecture Components
 
 ## 1. Data Layer Architecture

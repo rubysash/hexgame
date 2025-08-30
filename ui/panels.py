@@ -154,11 +154,11 @@ class UIPanel:
             self.screen.blit(name_text, (legend_x + 20, y_pos))
 
     def draw_settlement_summary(self, world_stats: Dict):
-        """Draw settlement summary panel"""
+        """Draw settlement summary panel with top 3 largest settlements"""
         panel_x = 10
         panel_y = 60
-        panel_width = 280
-        panel_height = 200
+        panel_width = 320  # Increased width to accommodate longer settlement info
+        panel_height = 240  # Increased height for top 3 settlements
         
         # Background
         pygame.draw.rect(self.screen, Config.UI_PANEL_COLOR,
@@ -184,15 +184,32 @@ class UIPanel:
         self.screen.blit(text, (panel_x + 10, panel_y + y_offset))
         y_offset += 25
         
-        # Largest city
-        largest_city = world_stats.get('largest_city')
-        largest_city_xy = world_stats.get('largest_city_xy')
-        if largest_city:
-            text = self.settlement_font.render(f"Largest City: {largest_city} {largest_city_xy}", True, (220, 220, 100))
+        # Top 3 largest settlements
+        largest_settlements = world_stats.get('largest_settlements', [])
+        if largest_settlements:
+            text = self.settlement_font.render("Largest Settlements:", True, (220, 220, 100))
             self.screen.blit(text, (panel_x + 10, panel_y + y_offset))
             y_offset += 20
+            
+            for i, settlement_info in enumerate(largest_settlements):
+                if i >= 3:  # Only show top 3
+                    break
+                    
+                name = settlement_info['name']
+                population = settlement_info['population']
+                coordinates = settlement_info['coordinates']
+                
+                # Format the line as: "1. Settlement Name  x,y  (population)"
+                settlement_line = f"{i + 1}. {name}  {coordinates[0]},{coordinates[1]}  ({population:,})"
+                
+                # Use smaller font and lighter color for settlement entries
+                text = self.settlement_font.render(settlement_line, True, (180, 180, 180))
+                self.screen.blit(text, (panel_x + 15, panel_y + y_offset))
+                y_offset += 16
         
-        # Settlement breakdown
+        y_offset += 10  # Add some spacing
+        
+        # Settlement breakdown by type
         settlements_by_type = world_stats.get('settlements_by_type', {})
         if settlements_by_type:
             text = self.settlement_font.render("By Type:", True, (180, 180, 180))
@@ -203,7 +220,7 @@ class UIPanel:
             sorted_settlements = sorted(settlements_by_type.items(), 
                                       key=lambda x: x[1], reverse=True)
             
-            for settlement_type, count in sorted_settlements[:6]:  # Show top 6
+            for settlement_type, count in sorted_settlements[:5]:  # Show top 5 (reduced from 6 to fit)
                 if count > 0:
                     # Clean up settlement type name for display
                     display_name = settlement_type.replace('_', ' ').title()
@@ -218,7 +235,7 @@ class UIPanel:
     def draw_world_statistics(self, world_stats: Dict):
         """Draw detailed world statistics panel"""
         panel_x = 10
-        panel_y = 280
+        panel_y = 320  # Adjusted to account for taller settlement panel
         panel_width = 280
         panel_height = 150
         
@@ -344,7 +361,5 @@ class UIPanel:
         self.show_settlement_panel = not self.show_settlement_panel
     
     def toggle_statistics(self):
-        """Toggle statistics panel visibility"""
-        self.show_statistics = not self.show_statistics
         """Toggle statistics panel visibility"""
         self.show_statistics = not self.show_statistics

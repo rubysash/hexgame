@@ -132,16 +132,15 @@ class World:
             'settlements_by_type': {k: len(v) for k, v in self.settlements_by_type.items()},
             'terrain_distribution': {},
             'largest_city': None,
-            'largest_city_xy' : None,
+            'largest_city_xy': None,
+            'largest_settlements': [],  # NEW: List of top 3 settlements
             'total_population': 0
         }
         
-        # Calculate terrain distribution
+        # Calculate terrain distribution and find largest settlements
         terrain_counts = {}
-        largest_population = 0
-        largest_city = None
-        largest_city_xy = None
         total_pop = 0
+        all_settlements = []
         
         for hex_obj in self.hexes.values():
             terrain_name = hex_obj.terrain.name
@@ -150,14 +149,25 @@ class World:
             if hex_obj.has_settlement:
                 pop = hex_obj.settlement_data.population
                 total_pop += pop
-                if pop > largest_population:
-                    largest_population = pop
-                    largest_city = hex_obj.settlement_data.name
-                    largest_city_xy = (hex_obj.q, hex_obj.r) 
+                
+                # Collect all settlements with their data for sorting
+                all_settlements.append({
+                    'name': hex_obj.settlement_data.name,
+                    'population': pop,
+                    'coordinates': (hex_obj.q, hex_obj.r)
+                })
+        
+        # Sort settlements by population (descending) and take top 3
+        all_settlements.sort(key=lambda s: s['population'], reverse=True)
+        stats['largest_settlements'] = all_settlements[:3]
+        
+        # Keep backward compatibility - largest_city is still the biggest settlement
+        if all_settlements:
+            largest = all_settlements[0]
+            stats['largest_city'] = largest['name']
+            stats['largest_city_xy'] = largest['coordinates']
         
         stats['terrain_distribution'] = terrain_counts
-        stats['largest_city'] = largest_city
-        stats['largest_city_xy'] = largest_city_xy
         stats['total_population'] = total_pop
         
         return stats

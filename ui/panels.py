@@ -186,8 +186,9 @@ class UIPanel:
         
         # Largest city
         largest_city = world_stats.get('largest_city')
+        largest_city_xy = world_stats.get('largest_city_xy')
         if largest_city:
-            text = self.settlement_font.render(f"Largest City: {largest_city}", True, (220, 220, 100))
+            text = self.settlement_font.render(f"Largest City: {largest_city} {largest_city_xy}", True, (220, 220, 100))
             self.screen.blit(text, (panel_x + 10, panel_y + y_offset))
             y_offset += 20
         

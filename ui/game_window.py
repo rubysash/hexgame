@@ -2,6 +2,7 @@
 ui/game_window.py - Main pygame window and game loop (Updated with Settlement Features)
 """
 
+import random
 import pygame
 import threading
 from typing import Optional
@@ -19,52 +20,51 @@ from data.persistence import WorldPersistence
 class HexGridGame:
     """Main game class managing the pygame window and game loop"""
     
-    def __init__(self):
+    def __init__(self, world_seed: Optional[int] = None):
         pygame.init()
         Config.ensure_directories()
         
-        # Setup display
+        # Use provided seed or get from config system
+        if world_seed is None:
+            world_seed = get_world_seed()
+        
+        # Setup display with seed in title if configured
+        title = "Hex Explorer - Infinite World with Settlements"
+        if Config.SHOW_SEED_IN_TITLE:
+            title += f" (Seed: {world_seed})"
+            
         self.screen = pygame.display.set_mode((Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT))
-        pygame.display.set_caption("Hex Explorer - Infinite World with Settlements")
+        pygame.display.set_caption(title)
         self.clock = pygame.time.Clock()
         self.running = True
         
-        # Initialize game components
-        self.world = World(Config.DEFAULT_WORLD_SEED)
+        # Initialize game components with seed
+        self.world = World(world_seed)
         self.viewport = Viewport(self.world, Config.VIEWPORT_RADIUS, Config.BUFFER_RADIUS)
         self.renderer = HexRenderer(Config.HEX_SIZE)
         self.renderer.init_fonts()
         
-        # UI components
-        self.ui_panel = UIPanel(self.screen, self.renderer)
+        # Store seed for display/saving
+        self.world_seed = world_seed
         
-        # Camera position (in pixels, centered on origin)
+        # Rest of initialization...
+        self.ui_panel = UIPanel(self.screen)
         self.camera_x = Config.SCREEN_WIDTH // 2
         self.camera_y = Config.SCREEN_HEIGHT // 2
-        
-        # Current state
         self.current_center = HexCoordinate(0, 0)
         self.mouse_hex = None
-        
-        # Persistence
         self.persistence = WorldPersistence()
-        
-        # Initialize viewport
         self.viewport.update(HexCoordinate(0, 0))
         
-        print("Hex Explorer initialized with settlement system!")
-        print("Controls:")
-        print("  Arrow Keys: Move camera")
-        print("  Shift + Arrow: Fast movement")
-        print("  Space: Reset to origin")
-        print("  N: Toggle settlement names")
-        print("  I: Toggle settlement icons") 
-        print("  L: Toggle legend")
-        print("  P: Toggle settlement panel")
-        print("  S: Toggle statistics")
-        print("  Ctrl+S: Save world")
-        print("  Ctrl+L: Load world")
-        print("  ESC: Quit")
+        print(f"Hex Explorer initialized with seed: {world_seed}")
+        #print("Controls:")
+        #print("  Arrow Keys: Move camera")
+        #print("  Shift + Arrow: Fast movement")
+        #print("  Space: Reset to origin")
+        #print("  G: Print world statistics")
+        #print("  Ctrl+S: Save world")
+        #print("  Ctrl+L: Load world")
+        #print("  ESC: Quit")
         
     def handle_events(self):
         """Handle pygame events and input"""

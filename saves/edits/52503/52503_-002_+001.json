@@ -1,0 +1,19 @@
+{
+  "q": -2,
+  "r": 1,
+  "custom_name": "Bees Knees",
+  "description": "Test Edit",
+  "notes": "",
+  "override_terrain": false,
+  "override_settlement": false,
+  "terrain_type": null,
+  "settlement_name": null,
+  "settlement_type": null,
+  "settlement_population": null,
+  "explored": false,
+  "exploration_level": 0,
+  "image_files": [],
+  "audio_file": null,
+  "last_edited": "2025-08-30T22:21:40.459888",
+  "version": 1
+}

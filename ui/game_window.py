@@ -1,5 +1,5 @@
 """
-ui/game_window.py - Main pygame window and game loop (Updated with Settlement Features)
+ui/game_window.py - Fixed main pygame window with proper Tkinter integration
 """
 
 import random
@@ -15,7 +15,6 @@ from core.world import World
 from core.viewport import Viewport
 from ui.renderer import HexRenderer
 from ui.panels import UIPanel
-from ui.hex_editor_window import HexEditorWindow
 from data.persistence import WorldPersistence
 from data.hex_editor import HexEditData
 
@@ -69,6 +68,10 @@ class HexGridGame:
         # Editor window reference
         self.editor_window = None
         
+        # Initialize Tkinter root window (hidden)
+        self.tk_root = None
+        self._init_tkinter()
+        
         print(f"Hex Explorer initialized with seed: {world_seed}")
         print("Controls:")
         print("  Arrow Keys: Move camera")
@@ -80,9 +83,42 @@ class HexGridGame:
         print("  Ctrl+S: Save world")
         print("  Ctrl+L: Load world")
         print("  ESC: Quit")
+    
+    def _init_tkinter(self):
+        """Initialize hidden Tkinter root window"""
+        try:
+            self.tk_root = tk.Tk()
+            self.tk_root.withdraw()  # Hide the root window
+            # Don't start mainloop - we'll handle events manually
+        except Exception as e:
+            print(f"Warning: Could not initialize Tkinter: {e}")
+            self.tk_root = None
+    
+    def _process_tkinter_events(self):
+        """Process Tkinter events without blocking pygame"""
+        if self.tk_root:
+            try:
+                self.tk_root.update_idletasks()
+                self.tk_root.update()
+            except tk.TclError:
+                # Tkinter was destroyed
+                self.tk_root = None
+            except Exception as e:
+                print(f"Tkinter event processing error: {e}")
         
+        # Check if editor window still exists
+        if self.editor_window:
+            try:
+                if not self.editor_window.root.winfo_exists():
+                    self.editor_window = None
+            except:
+                self.editor_window = None
+                
     def handle_events(self):
         """Handle pygame events and input"""
+        # Process Tkinter events first
+        self._process_tkinter_events()
+        
         keys = pygame.key.get_pressed()
         
         # Determine camera speed
@@ -132,51 +168,63 @@ class HexGridGame:
     def open_hex_editor(self):
         """Open the hex editor for the currently hovered hex"""
         if not self.mouse_hex:
+            print("No hex under mouse cursor")
             return
         
-        # Don't open multiple editors
+        # Check if an editor window already exists
         if self.editor_window is not None:
-            return
-        
-        # Get existing edit data if any
-        coord = HexCoordinate(self.mouse_hex.q, self.mouse_hex.r)
-        edit_data = self.world.get_hex_edit(coord)
-        
-        # Create editor window
-        def on_save(data: HexEditData) -> bool:
-            success = self.world.save_hex_edit(data)
-            if success:
-                print(f"Saved edit data for hex ({data.q}, {data.r})")
-                # Refresh the hex to show changes
-                self.viewport.update(self.current_center)
-            return success
-        
-        def open_editor():
-            """Open editor in a thread-safe way"""
             try:
-                # Initialize Tk if needed
-                root = tk.Tk()
-                root.withdraw()  # Hide the root window
-                
-                # Create editor
-                self.editor_window = HexEditorWindow(
-                    self.mouse_hex,
-                    on_save=on_save,
-                    edit_data=edit_data
-                )
-                
-                # Run the editor
-                self.editor_window.root.mainloop()
-                
-            except Exception as e:
-                print(f"Error opening editor: {e}")
-            finally:
+                if self.editor_window.root.winfo_exists():
+                    # Window exists, bring it to front
+                    self.editor_window.root.lift()
+                    self.editor_window.root.focus_force()
+                    return
+            except:
+                # Window was closed, clean up the reference
                 self.editor_window = None
         
-        # Run editor in separate thread to avoid blocking pygame
-        editor_thread = threading.Thread(target=open_editor, daemon=True)
-        editor_thread.start()
-    
+        # Don't open editor if Tkinter isn't available
+        if not self.tk_root:
+            print("Tkinter not available - cannot open hex editor")
+            return
+        
+        try:
+            # Get existing edit data if any
+            coord = HexCoordinate(self.mouse_hex.q, self.mouse_hex.r)
+            edit_data = self.world.get_hex_edit(coord)
+            
+            # Create save callback
+            def on_save(data: HexEditData) -> bool:
+                try:
+                    success = self.world.save_hex_edit(data)
+                    if success:
+                        print(f"Saved edit data for hex ({data.q}, {data.r})")
+                        # Refresh the hex to show changes
+                        self.viewport.update(self.current_center)
+                    else:
+                        print(f"Failed to save edit data for hex ({data.q}, {data.r})")
+                    return success
+                except Exception as e:
+                    print(f"Error saving hex edit: {e}")
+                    return False
+            
+            # Import the editor window class
+            from ui.hex_editor_window import HexEditorWindow
+            
+            # Create editor window with proper parent
+            self.editor_window = HexEditorWindow(
+                self.mouse_hex,
+                on_save=on_save,
+                edit_data=edit_data,
+                parent=self.tk_root
+            )
+            
+            print(f"Opened hex editor for ({self.mouse_hex.q}, {self.mouse_hex.r})")
+            
+        except Exception as e:
+            print(f"Error opening hex editor: {e}")
+            self.editor_window = None
+
     def play_hex_media(self):
         """Play media associated with hex (future feature)"""
         if not self.mouse_hex:
@@ -305,12 +353,18 @@ class HexGridGame:
         print("="*50)
     
     def save_world(self):
-        """Save world with file dialog"""
-        def save_thread():
+        """Save world using Tkinter file dialog"""
+        if not self.tk_root:
+            print("Cannot save - Tkinter not available")
+            return
+            
+        try:
             filename = filedialog.asksaveasfilename(
+                parent=self.tk_root,
                 defaultextension=".json",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                initialdir=Config.SAVE_DIR
+                initialdir=Config.SAVE_DIR,
+                title="Save World"
             )
             if filename:
                 try:
@@ -320,16 +374,24 @@ class HexGridGame:
                     print(f"Saved {stats['total_hexes']} hexes with {stats['total_settlements']} settlements")
                     print(f"Edited hexes: {stats.get('edited_hexes', 0)}")
                 except Exception as e:
-                    messagebox.showerror("Save Error", f"Failed to save world: {e}")
-        
-        threading.Thread(target=save_thread, daemon=True).start()
+                    print(f"Save error: {e}")
+                    if self.tk_root:
+                        messagebox.showerror("Save Error", f"Failed to save world: {e}", parent=self.tk_root)
+        except Exception as e:
+            print(f"Error opening save dialog: {e}")
     
     def load_world(self):
-        """Load world with file dialog"""
-        def load_thread():
+        """Load world using Tkinter file dialog"""
+        if not self.tk_root:
+            print("Cannot load - Tkinter not available")
+            return
+            
+        try:
             filename = filedialog.askopenfilename(
+                parent=self.tk_root,
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                initialdir=Config.SAVE_DIR
+                initialdir=Config.SAVE_DIR,
+                title="Load World"
             )
             if filename:
                 try:
@@ -349,9 +411,11 @@ class HexGridGame:
                     print(f"Edited hexes: {stats.get('edited_hexes', 0)}")
                     
                 except Exception as e:
-                    messagebox.showerror("Load Error", f"Failed to load world: {e}")
-        
-        threading.Thread(target=load_thread, daemon=True).start()
+                    print(f"Load error: {e}")
+                    if self.tk_root:
+                        messagebox.showerror("Load Error", f"Failed to load world: {e}", parent=self.tk_root)
+        except Exception as e:
+            print(f"Error opening load dialog: {e}")
     
     def draw(self):
         """Main draw method"""
@@ -401,6 +465,20 @@ class HexGridGame:
             self.handle_events()
             self.draw()
             self.clock.tick(Config.FPS)
+        
+        # Cleanup
+        if self.editor_window:
+            try:
+                self.editor_window._close_window()
+            except:
+                pass
+        
+        if self.tk_root:
+            try:
+                self.tk_root.quit()
+                self.tk_root.destroy()
+            except:
+                pass
         
         # Print final statistics
         print(f"\nFinal exploration statistics:")

@@ -137,9 +137,9 @@ class HexRenderer:
             print("  Consider installing 'DejaVu Sans' or 'Noto Sans' fonts for better symbol support")
         
         # Set up standard fonts
-        self.font = pygame.font.Font(None, 12)
-        self.small_font = pygame.font.Font(None, 12) 
-        self.settlement_font = self.unicode_font if self.unicode_font else pygame.font.Font(None, 14)
+        self.font = pygame.font.Font(None, 16)
+        self.small_font = pygame.font.Font(None, 14) 
+        self.settlement_font = self.unicode_font if self.unicode_font else pygame.font.Font(None, 16)
         
         # Test the final selected font one more time for user feedback
         if self.unicode_font:
@@ -184,7 +184,7 @@ class HexRenderer:
         elif settlement_type in [SettlementType.HAMLET, SettlementType.FARMSTEAD]:
             font_size = max(10, base_size + population // 20)
         elif settlement_type.name.startswith('RUINS'):
-            font_size = 11
+            font_size = 12
         else:
             font_size = 14
         

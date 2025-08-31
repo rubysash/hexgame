@@ -51,12 +51,12 @@ class HexGridGame:
         self.viewport = Viewport(self.world, Config.VIEWPORT_RADIUS, Config.BUFFER_RADIUS)
         self.renderer = HexRenderer(Config.HEX_SIZE)
         self.renderer.init_fonts()
-        
+        self.ui_panel = UIPanel(self.screen, self.renderer)
+    
         # Store seed for display/saving
         self.world_seed = world_seed
         
         # UI components
-        self.ui_panel = UIPanel(self.screen)
         self.camera_x = Config.SCREEN_WIDTH // 2
         self.camera_y = Config.SCREEN_HEIGHT // 2
         self.current_center = HexCoordinate(0, 0)

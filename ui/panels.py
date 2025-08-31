@@ -141,11 +141,11 @@ class UIPanel:
                 if symbol_text.get_width() == 0:
                     # Symbol didn't render, use ASCII fallback
                     fallback_symbol = "*" if settlement_type != SettlementType.FARMSTEAD else "o"
-                    symbol_text = self.legend_font.render(fallback_symbol, True, symbol_color)
+                    symbol_text = unicode_font.render(fallback_symbol, True, symbol_color) 
             except Exception:
                 # Any error, use simple fallback
                 fallback_symbol = "*"
-                symbol_text = self.legend_font.render(fallback_symbol, True, symbol_color)
+                symbol_text = unicode_font.render(fallback_symbol, True, symbol_color) 
             
             self.screen.blit(symbol_text, (legend_x, y_pos))
             

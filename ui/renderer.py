@@ -220,9 +220,9 @@ class HexRenderer:
         text_rect = text_surface.get_rect(center=(int(center_x), int(icon_y)))
         
         # Add subtle background for better visibility
-        bg_rect = text_rect.copy()
-        bg_rect.inflate_ip(2, 1)
-        pygame.draw.rect(surface, (0, 0, 0, 80), bg_rect)
+        #bg_rect = text_rect.copy()
+        #bg_rect.inflate_ip(2, 1)
+        #pygame.draw.rect(surface, (0, 0, 0, 80), bg_rect)
         
         # Draw the symbol
         surface.blit(text_surface, text_rect)

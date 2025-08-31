@@ -278,7 +278,8 @@ class HexRenderer:
         surface.blit(text_surface, text_rect)
     
     def draw_hex(self, surface: pygame.Surface, hex_obj: Hex, 
-                camera_x: float, camera_y: float, show_coords: bool = True):
+                camera_x: float, camera_y: float, show_coords: bool = True,
+                has_edit: bool = False):
         """Draw a single hex with its terrain color, settlements, and optional coordinates"""
         coord = HexCoordinate(hex_obj.q, hex_obj.r)
         pixel_x, pixel_y = self.hex_to_pixel(coord)
@@ -287,21 +288,29 @@ class HexRenderer:
         
         # Draw the hexagon
         border_color = (50, 50, 50)
-        if hex_obj.has_settlement:
+        if has_edit:
+            border_color = (100, 200, 100)  # Green border for edited hexes
+        elif hex_obj.has_settlement:
             border_color = (100, 100, 100)  # Lighter border for settlements
         
         self.draw_hexagon(surface, screen_x, screen_y, hex_obj.terrain.color, border_color)
+        
+        # Draw edit indicator if hex has been edited
+        if has_edit:
+            # Draw a small "E" in the top-left corner
+            if self.small_font:
+                edit_indicator = self.small_font.render("E", True, (100, 255, 100))
+                surface.blit(edit_indicator, (screen_x - self.hex_size + 5, screen_y - self.hex_size + 5))
         
         # Draw settlement if present
         if hex_obj.has_settlement:
             self.draw_settlement_icon(surface, screen_x, screen_y, 
                                     hex_obj.settlement_data.settlement_type)
         
-        # Draw coordinates below center - always show for non-settlement hexes, or when settlement names are off
+        # Draw coordinates below center
         if show_coords and self.font:
             text = f"{hex_obj.q},{hex_obj.r}"
             text_surface = self.font.render(text, True, (0, 0, 0))
-            # Position text below center
             text_y = screen_y + 10
             text_rect = text_surface.get_rect(center=(screen_x, text_y))
             surface.blit(text_surface, text_rect)

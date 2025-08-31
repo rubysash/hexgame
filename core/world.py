@@ -6,13 +6,16 @@ import random
 from typing import Dict, Tuple, Optional, List
 from core.hex_grid import HexCoordinate
 from data.models import Hex, TerrainType
+from data.hex_editor import HexEditorManager, HexEditData
 from generation.terrain_generator import TerrainGenerator
 from generation.settlement_generator import SettlementGenerator
+
 
 class World:
     """
     Manages the entire game world state.
-    Coordinates between terrain generation, settlement generation, hex storage, and game systems.
+    Coordinates between terrain generation, settlement generation, hex storage, 
+    edit data, and game systems.
     """
     
     def __init__(self, world_seed: Optional[int] = None):
@@ -20,6 +23,9 @@ class World:
         self.hexes: Dict[Tuple[int, int], Hex] = {}
         self.terrain_generator = TerrainGenerator(self.world_seed)
         self.settlement_generator = SettlementGenerator(self.world_seed)
+        
+        # Edit data manager
+        self.editor_manager = HexEditorManager(self.world_seed)
         
         # Settlement tracking
         self.settlements_by_type: Dict[str, List[Hex]] = {}
@@ -35,7 +41,60 @@ class World:
         key = coord.to_tuple()
         if key not in self.hexes:
             self.generate_hex(coord)
-        return self.hexes[key]
+        
+        hex_obj = self.hexes[key]
+        
+        # Apply edit data if it exists
+        self._apply_edit_data(hex_obj)
+        
+        return hex_obj
+    
+    def _apply_edit_data(self, hex_obj: Hex):
+        """Apply edit data overrides to a hex"""
+        edit_data = self.editor_manager.load_hex_edit(hex_obj.q, hex_obj.r)
+        if not edit_data:
+            return
+        
+        # Store reference to edit data in hex (for UI display)
+        hex_obj.edit_data = edit_data
+        
+        # Apply exploration overrides
+        if edit_data.explored is not None:
+            hex_obj.discovery_data.explored = edit_data.explored
+        if edit_data.exploration_level is not None:
+            hex_obj.discovery_data.exploration_level = edit_data.exploration_level
+        
+        # Apply terrain override (future expansion)
+        if edit_data.override_terrain and edit_data.terrain_type:
+            try:
+                hex_obj.terrain_data.primary = TerrainType[edit_data.terrain_type]
+            except KeyError:
+                pass  # Invalid terrain type, ignore
+        
+        # Apply settlement override (future expansion)
+        if edit_data.override_settlement and edit_data.settlement_name:
+            if hex_obj.settlement_data:
+                hex_obj.settlement_data.name = edit_data.settlement_name
+    
+    def save_hex_edit(self, edit_data: HexEditData) -> bool:
+        """Save edit data for a hex"""
+        success = self.editor_manager.save_hex_edit(edit_data)
+        
+        if success:
+            # Refresh the hex to apply changes
+            key = (edit_data.q, edit_data.r)
+            if key in self.hexes:
+                self._apply_edit_data(self.hexes[key])
+        
+        return success
+    
+    def has_hex_edit(self, coord: HexCoordinate) -> bool:
+        """Check if a hex has edit data"""
+        return self.editor_manager.has_edit(coord.q, coord.r)
+    
+    def get_hex_edit(self, coord: HexCoordinate) -> Optional[HexEditData]:
+        """Get edit data for a hex"""
+        return self.editor_manager.load_hex_edit(coord.q, coord.r)
     
     def generate_hex(self, coord: HexCoordinate):
         """Generate a new hex using terrain generation rules"""
@@ -62,10 +121,8 @@ class World:
             new_hex.settlement_data = settlement
             self._track_settlement(new_hex)
         
-        # Future: Generate additional content layers
-        # self.generate_inhabitants(new_hex)
-        # self.generate_resources(new_hex)
-        # self.generate_encounters(new_hex)
+        # Apply edit data if it exists (for already edited hexes being regenerated)
+        self._apply_edit_data(new_hex)
         
     def _track_settlement(self, hex_obj: Hex):
         """Track settlement for easy lookup"""
@@ -124,6 +181,10 @@ class World:
         """Get all settlements of a specific type"""
         return self.settlements_by_type.get(settlement_type, [])
     
+    def get_edited_hexes(self) -> List[Tuple[int, int]]:
+        """Get list of all hexes with edit data"""
+        return self.editor_manager.list_all_edits()
+    
     def get_world_statistics(self) -> Dict:
         """Get statistics about the generated world"""
         stats = {
@@ -133,8 +194,9 @@ class World:
             'terrain_distribution': {},
             'largest_city': None,
             'largest_city_xy': None,
-            'largest_settlements': [],  # NEW: List of top 3 settlements
-            'total_population': 0
+            'largest_settlements': [],
+            'total_population': 0,
+            'edited_hexes': len(self.get_edited_hexes())  # Track edited hexes
         }
         
         # Calculate terrain distribution and find largest settlements

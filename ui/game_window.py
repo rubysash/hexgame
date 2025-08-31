@@ -15,7 +15,16 @@ from core.world import World
 from core.viewport import Viewport
 from ui.renderer import HexRenderer
 from ui.panels import UIPanel
+from ui.hex_editor_window import HexEditorWindow
 from data.persistence import WorldPersistence
+from data.hex_editor import HexEditData
+
+
+def get_world_seed():
+    """Import helper function"""
+    from config import get_world_seed as _get_world_seed
+    return _get_world_seed()
+
 
 class HexGridGame:
     """Main game class managing the pygame window and game loop"""
@@ -47,24 +56,30 @@ class HexGridGame:
         # Store seed for display/saving
         self.world_seed = world_seed
         
-        # Rest of initialization...
+        # UI components
         self.ui_panel = UIPanel(self.screen)
         self.camera_x = Config.SCREEN_WIDTH // 2
         self.camera_y = Config.SCREEN_HEIGHT // 2
         self.current_center = HexCoordinate(0, 0)
         self.mouse_hex = None
+        self.mouse_pos = (0, 0)
         self.persistence = WorldPersistence()
         self.viewport.update(HexCoordinate(0, 0))
         
+        # Editor window reference
+        self.editor_window = None
+        
         print(f"Hex Explorer initialized with seed: {world_seed}")
-        #print("Controls:")
-        #print("  Arrow Keys: Move camera")
-        #print("  Shift + Arrow: Fast movement")
-        #print("  Space: Reset to origin")
-        #print("  G: Print world statistics")
-        #print("  Ctrl+S: Save world")
-        #print("  Ctrl+L: Load world")
-        #print("  ESC: Quit")
+        print("Controls:")
+        print("  Arrow Keys: Move camera")
+        print("  Shift + Arrow: Fast movement")
+        print("  Right-Click: Edit hex")
+        print("  E (on hover): Edit hex")
+        print("  Space: Reset to origin")
+        print("  G: Print world statistics")
+        print("  Ctrl+S: Save world")
+        print("  Ctrl+L: Load world")
+        print("  ESC: Quit")
         
     def handle_events(self):
         """Handle pygame events and input"""
@@ -101,8 +116,82 @@ class HexGridGame:
             elif event.type == pygame.KEYDOWN:
                 self.handle_keydown(event)
             elif event.type == pygame.MOUSEMOTION:
+                self.mouse_pos = event.pos
                 self.update_mouse_hex(event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.handle_mouse_click(event)
                 
+    def handle_mouse_click(self, event):
+        """Handle mouse click events"""
+        if event.button == 3:  # Right click
+            self.open_hex_editor()
+        elif event.button == 1:  # Left click (future: play media)
+            if self.mouse_hex:
+                self.play_hex_media()
+    
+    def open_hex_editor(self):
+        """Open the hex editor for the currently hovered hex"""
+        if not self.mouse_hex:
+            return
+        
+        # Don't open multiple editors
+        if self.editor_window is not None:
+            return
+        
+        # Get existing edit data if any
+        coord = HexCoordinate(self.mouse_hex.q, self.mouse_hex.r)
+        edit_data = self.world.get_hex_edit(coord)
+        
+        # Create editor window
+        def on_save(data: HexEditData) -> bool:
+            success = self.world.save_hex_edit(data)
+            if success:
+                print(f"Saved edit data for hex ({data.q}, {data.r})")
+                # Refresh the hex to show changes
+                self.viewport.update(self.current_center)
+            return success
+        
+        def open_editor():
+            """Open editor in a thread-safe way"""
+            try:
+                # Initialize Tk if needed
+                root = tk.Tk()
+                root.withdraw()  # Hide the root window
+                
+                # Create editor
+                self.editor_window = HexEditorWindow(
+                    self.mouse_hex,
+                    on_save=on_save,
+                    edit_data=edit_data
+                )
+                
+                # Run the editor
+                self.editor_window.root.mainloop()
+                
+            except Exception as e:
+                print(f"Error opening editor: {e}")
+            finally:
+                self.editor_window = None
+        
+        # Run editor in separate thread to avoid blocking pygame
+        editor_thread = threading.Thread(target=open_editor, daemon=True)
+        editor_thread.start()
+    
+    def play_hex_media(self):
+        """Play media associated with hex (future feature)"""
+        if not self.mouse_hex:
+            return
+        
+        # Check if hex has edit data with media
+        coord = HexCoordinate(self.mouse_hex.q, self.mouse_hex.r)
+        edit_data = self.world.get_hex_edit(coord)
+        
+        if edit_data and (edit_data.image_files or edit_data.audio_file):
+            print(f"Playing media for hex ({self.mouse_hex.q}, {self.mouse_hex.r})")
+            # Future: Implement media playback
+        else:
+            print(f"No media for hex ({self.mouse_hex.q}, {self.mouse_hex.r})")
+    
     def handle_keydown(self, event):
         """Handle keyboard events"""
         if event.key == pygame.K_ESCAPE:
@@ -117,6 +206,9 @@ class HexGridGame:
             self.save_world()
         elif event.key == pygame.K_l and pygame.key.get_mods() & pygame.KMOD_CTRL:
             self.load_world()
+        elif event.key == pygame.K_e:
+            # Edit hex under mouse
+            self.open_hex_editor()
         elif event.key == pygame.K_n:
             # Toggle settlement names
             self.renderer.toggle_settlement_names()
@@ -165,6 +257,7 @@ class HexGridGame:
         print(f"Total Hexes Generated: {stats['total_hexes']}")
         print(f"Total Settlements: {stats['total_settlements']}")
         print(f"Total Population: {stats['total_population']:,}")
+        print(f"Edited Hexes: {stats.get('edited_hexes', 0)}")
         
         if stats['largest_city']:
             print(f"Largest City: {stats['largest_city']}")
@@ -202,6 +295,13 @@ class HexGridGame:
                 settlement = town_hex.settlement_data
                 print(f"  {settlement.name} - Pop: {settlement.population:,} at ({town_hex.q}, {town_hex.r})")
         
+        # Show edited hexes
+        edited_hexes = self.world.get_edited_hexes()
+        if edited_hexes:
+            print(f"\nEDITED HEXES ({len(edited_hexes)}):")
+            for q, r in edited_hexes[:10]:  # Show first 10
+                print(f"  ({q}, {r})")
+        
         print("="*50)
     
     def save_world(self):
@@ -218,6 +318,7 @@ class HexGridGame:
                     stats = self.world.get_world_statistics()
                     print(f"World saved to {filename}")
                     print(f"Saved {stats['total_hexes']} hexes with {stats['total_settlements']} settlements")
+                    print(f"Edited hexes: {stats.get('edited_hexes', 0)}")
                 except Exception as e:
                     messagebox.showerror("Save Error", f"Failed to save world: {e}")
         
@@ -245,6 +346,7 @@ class HexGridGame:
                     stats = self.world.get_world_statistics()
                     print(f"World loaded from {filename}")
                     print(f"Loaded {stats['total_hexes']} hexes with {stats['total_settlements']} settlements")
+                    print(f"Edited hexes: {stats.get('edited_hexes', 0)}")
                     
                 except Exception as e:
                     messagebox.showerror("Load Error", f"Failed to load world: {e}")
@@ -259,8 +361,10 @@ class HexGridGame:
         # Draw visible hexes
         visible_hexes = self.viewport.get_visible_hexes()
         for hex_obj in visible_hexes:
-            # Always show coordinates since settlement names are disabled by default
-            self.renderer.draw_hex(self.screen, hex_obj, self.camera_x, self.camera_y, show_coords=True)
+            # Check if hex has edit data for special rendering
+            has_edit = hasattr(hex_obj, 'edit_data') and hex_obj.edit_data
+            self.renderer.draw_hex(self.screen, hex_obj, self.camera_x, self.camera_y, 
+                                  show_coords=True, has_edit=has_edit)
         
         # Get world statistics for UI
         world_stats = self.world.get_world_statistics()
@@ -291,7 +395,7 @@ class HexGridGame:
     def run(self):
         """Main game loop"""
         print(f"\nStarting exploration at world seed: {self.world.world_seed}")
-        print("Move around to discover new settlements!")
+        print("Right-click any hex to edit it!")
         
         while self.running:
             self.handle_events()

@@ -1,0 +1,145 @@
+{
+  "q": 15,
+  "r": 7,
+  "terrain": "FOREST",
+  "terrain_data": {
+    "primary": "FOREST",
+    "secondary": "HILLS",
+    "elevation": 120,
+    "special_features": ["ancient_grove", "hidden_spring", "deer_paths"]
+  },
+  "settlement": {
+    "type": "VILLAGE",
+    "name": "Elderwood Commons",
+    "population": 245,
+    "prosperity_level": 3,
+    "special_features": [
+      "market_square",
+      "temple",
+      "blacksmith",
+      "inn"
+    ],
+    "notable_npcs": [
+      {
+        "name": "Theron Oakenheart",
+        "role": "Village Elder",
+        "personality": "Wise but cautious about outsiders"
+      },
+      {
+        "name": "Mira Ironforge", 
+        "role": "Blacksmith",
+        "personality": "Gruff exterior, generous heart"
+      }
+    ],
+    "trade_goods": ["timber", "furs", "medicinal_herbs"],
+    "defenses": ["wooden_palisade", "militia_patrol"]
+  },
+  "discovery": {
+    "visible": true,
+    "explored": true,
+    "exploration_level": 2,
+    "last_visited": "2025-08-30T14:30:00",
+    "discovery_notes": [
+      "Found hidden shrine behind the blacksmith",
+      "Local legends speak of wolf spirits in the deep forest"
+    ]
+  },
+  "inhabitants": {
+    "permanent": [
+      {
+        "id": "wolf_pack_alpha",
+        "type": "dire_wolf",
+        "status": "territorial",
+        "population": 6,
+        "territory_range": 2
+      }
+    ],
+    "temporary": [
+      {
+        "id": "traveling_merchant",
+        "expires": "2025-09-15",
+        "type": "trader",
+        "goods": ["exotic_spices", "silk_cloth"]
+      }
+    ],
+    "respawn_queue": []
+  },
+  "resources": {
+    "harvestable": [
+      "ironbark_trees",
+      "moonwell_water", 
+      "silverleaf_herbs"
+    ],
+    "treasure": [
+      {
+        "type": "buried_cache",
+        "contents": ["ancient_coins", "weathered_map"],
+        "discovery_difficulty": "hard",
+        "discovered": false
+      }
+    ],
+    "consumed": ["old_growth_oak"]
+  },
+  "encounters": {
+    "recent": [
+      {
+        "type": "bandit_ambush",
+        "date": "2025-08-25",
+        "resolved": true,
+        "outcome": "peaceful_resolution"
+      }
+    ],
+    "scripted": [
+      {
+        "id": "mysterious_traveler",
+        "trigger": "third_visit",
+        "status": "pending"
+      }
+    ],
+    "tables": ["forest_day", "village_interaction", "woodland_creatures"]
+  },
+  "modifications": {
+    "player_changes": [
+      {
+        "type": "campsite",
+        "date": "2025-08-20",
+        "description": "Well-hidden camp with fire ring",
+        "supplies_cached": ["rations", "rope"]
+      }
+    ],
+    "environmental": [
+      {
+        "type": "seasonal_change",
+        "effect": "autumn_colors",
+        "expires": "2025-12-01"
+      }
+    ],
+    "history": [
+      {
+        "date": "2025-07-15",
+        "event": "Bandit raid repelled by village militia",
+        "consequences": ["increased_patrols", "suspicious_of_strangers"]
+      }
+    ]
+  },
+  "edit_data": {
+    "custom_name": "The Whispering Grove",
+    "description": "This ancient forest holds secrets older than the village itself. Massive ironbark trees tower overhead, their branches forming a natural cathedral. A hidden spring bubbles up from moss-covered stones, said to have healing properties.",
+    "notes": "Players discovered the hidden shrine. Theron mentioned the wolf spirits - potential quest hook. The merchant arrives every full moon.",
+    "explored": true,
+    "exploration_level": 2,
+    "last_edited": "2025-08-30T15:45:00",
+    "version": 1,
+    "media_files": {
+      "images": ["elderwood_village.jpg", "hidden_shrine.png"],
+      "audio": "forest_ambience.mp3",
+      "maps": ["village_layout.png", "surrounding_area.jpg"]
+    }
+  },
+  "metadata": {
+    "generated_date": "2025-08-30T10:15:00",
+    "world_seed": 123456,
+    "generation_version": "1.0",
+    "last_updated": "2025-08-30T15:45:00"
+  }
+}

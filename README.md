@@ -1,434 +1,146 @@
-# Core Concept
-This is a hex-based exploration and role-playing game. The world is divided into hexagonal tiles that players move through, explore, and interact with. Each hex stores terrain, encounters, resources, and NPC data. The game is built to blend procedural generation (terrain, rivers, settlements, encounters) with structured rules (movement, exploration, combat) and narrative AI (descriptions, dialogue, story events). GURPS rules are used for combat and character mechanics.
+# Hex Explorer - Infinite World with Settlements
 
-![gurps hex game demo](https://github.com/rubysash/hexgame/blob/main/mvp-demo.png?raw=true)
+A hex-based exploration and role-playing game featuring procedural world generation, settlement systems, and interactive hex editing. The world generates infinite terrain and settlements following realistic geographic rules, with a built-in editor for customization.
 
-# How It Works
-## 1. World Structure
-- The world is a grid of hexes generated on demand.
-- Hexes are saved to JSON files, keeping memory light via a viewport system that only loads nearby tiles.
-- Terrain generation follows logical geographic rules (mountains cluster, rivers flow downhill, deserts avoid water, etc.).
+![Hex Explorer Demo](https://github.com/rubysash/hexgame/blob/main/mvp-demo.png?raw=true)
 
-## 2. Exploration and Movement
-- The player controls a party that moves hex to hex.
-- Movement cost depends on terrain type (plains are easier than mountains).
-- Exploration has levels: seeing a hex, surface exploration, or thorough discovery.
+## Core Features
 
-## 3. Encounters and NPCs
-- Each hex can trigger encounters, rolled from terrain-based tables.
-- NPCs are generated with motivations and roles; unique NPCs persist while organizational roles respawn replacements.
+###  Infinite World Generation
+- **Procedural Terrain**: Six terrain types (Plains, Forest, Hills, Mountains, Water, Desert) generated using neighbor-based logic
+- **Realistic Geography**: Mountains cluster together, rivers flow logically, deserts avoid water
+- **Settlement System**: 12 settlement types from farmsteads to cities, with ruins and specialty camps
+- **Seed-Based Consistency**: Same seed always generates the same world
 
-## 4. AI Integration
-- AI generates descriptive text for hexes, encounters, and NPC dialogue.
-- A story engine maintains consistency across the campaign.
+###  Dynamic Settlement System
+- **Population Simulation**: Each settlement has realistic population ranges and prosperity levels
+- **Terrain-Appropriate Placement**: Logging camps in forests, mining camps in mountains, ports near water
+- **Special Features**: Markets, temples, blacksmiths, and other features based on settlement size
+- **Trade Goods**: Settlements produce appropriate goods (timber from logging camps, ore from mines)
+- **Naming System**: Procedural names using terrain-appropriate prefixes and suffixes
 
-## 5. Combat and Mechanics
-- Combat uses a turn-based GURPS-lite system for resolution.
-- Exploration, movement, and encounters all tie back into GURPS mechanics.
+###  Interactive Hex Editor
+- **Custom Names**: Override procedural names with custom titles
+- **Rich Descriptions**: Add detailed descriptions and notes to any hex
+- **Exploration Tracking**: Mark hexes as explored with different exploration levels
+- **Media Support**: Framework for adding images and audio (future expansion)
+- **Persistent Storage**: All edits saved as individual JSON files
 
-## 6. User Interface
-- A map viewport shows the hex grid with zoom/pan.
-- A control panel displays party stats, current hex info, and encounter options.
-- A combat view handles tactical fights separately.
+### 🎮 Game Controls
+- **Arrow Keys**: Navigate the world
+- **Shift + Arrow**: Fast movement
+- **Right-Click/E**: Open hex editor for the hovered hex
+- **Space**: Reset to world origin (0,0)
+- **N**: Toggle settlement name display
+- **I**: Toggle settlement icon display
+- **L**: Toggle terrain legend
+- **P**: Toggle settlement summary panel
+- **T**: Toggle world statistics panel
+- **G**: Print detailed world statistics to console
+- **Ctrl+S**: Save world state
+- **Ctrl+L**: Load world state
 
-# Final Product
-The finished game is a sandbox hex-crawl RPG where players guide a party across a dynamically generated world. Exploration reveals terrain, resources, settlements, and dangers. Terrain and geography feel realistic due to rule-based generation. AI provides rich, adaptive descriptions and NPC interactions, keeping the world immersive and fresh. GURPS rules add tactical depth to encounters and combat. The re
+## Technical Architecture
 
----
-# Core Architecture Components
+### Core Systems
+- **World Management** (`core/world.py`): Manages global world state and coordinates all generation systems
+- **Hex Grid Mathematics** (`core/hex_grid.py`): Handles hexagonal coordinate system and conversions
+- **Viewport System** (`core/viewport.py`): Manages memory-efficient loading of visible hexes
+- **Terrain Generation** (`generation/terrain_generator.py`): Creates realistic terrain using weighted neighbor influences
+- **Settlement Generation** (`generation/settlement_generator.py`): Places and configures settlements based on terrain
 
-## 1. Data Layer Architecture
-Hex Data Structure
+### Data Layer
+- **Hex Data Model** (`data/models.py`): Complete hex data structure with terrain, settlements, and discovery tracking
+- **Edit Data System** (`data/hex_editor.py`): Manages user customizations and overrides
+- **World Persistence** (`data/persistence.py`): Save/load functionality for complete world states
 
-Static World Data: Immutable terrain, biomes, major landmarks, climate zones
-Dynamic State Data: Current conditions, temporary effects, seasonal changes
-Discovery State: What's been revealed through exploration vs. what remains hidden
-Interaction History: Previous encounters, changes made by player actions
+### User Interface
+- **Main Game Window** (`ui/game_window.py`): PyGame-based main interface with viewport and controls
+- **Hex Renderer** (`ui/renderer.py`): Handles visual rendering of hexes, settlements, and Unicode symbols
+- **UI Panels** (`ui/panels.py`): Information displays, legends, and settlement summaries
+- **Hex Editor** (`ui/hex_editor_window.py`): Tkinter-based popup editor for hex customization
 
-### Data Persistence Strategy
+### Game Mechanics
+- **Exploration System** (`mechanics/exploration.py`): Discovery mechanics and visibility rules
+- **Movement System** (`mechanics/movement.py`): Movement costs and pathfinding framework
 
-World Definition Files: JSON files defining the base world (terrain, major features)
-Discovery Database: SQLite or JSON files tracking exploration progress
-Session State: Current game state, player position, active effects
-Backup/Versioning: Save states for different campaign moments
+## World Generation Rules
 
-## 2. Content Generation Framework
+### Terrain Logic
+Each terrain type has specific generation weights and neighbor preferences:
 
-### Layered Content System
+- **Plains**: Clusters moderately, likes forest neighbors, avoids mountains
+- **Forest**: Strong clustering, enhanced by water proximity, incompatible with desert
+- **Hills**: Transition zones, enhanced by mountain neighbors
+- **Mountains**: Strong clustering, creates natural barriers
+- **Water**: Lakes and rivers following elevation rules
+- **Desert**: Clusters strongly, avoids water and forest
 
-Base Layer: Geographic features (mountains, rivers, forests)
-Biome Layer: Ecosystem types that influence encounters
-Civilization Layer: Settlements, roads, territories, political boundaries
-Dynamic Layer: Weather, seasonal effects, temporary events
-Mystery Layer: Hidden secrets, dungeons, special locations
+### Settlement Placement
+Settlement generation follows realistic density and placement rules:
 
-### Content Categories to Design
+- **Density**: Rural areas have 1 village per 2-4 hexes, cities are rare (1 per 50-100 hexes)
+- **Resource Access**: Settlements prefer water access, logging camps need forests
+- **Terrain Suitability**: Each settlement type has preferred terrain types
+- **Population Ranges**: From farmsteads (5-20) to cities (2000-10000)
 
-Terrain Types: Each with movement costs, visibility ranges, encounter tables
-Settlement Types: Villages, cities, ruins - each with different interaction possibilities
-Encounter Tables: Creature types by biome/terrain combination
-Resource Types: Materials, treasures, magical items
-Weather/Environmental Effects: How they modify encounters and movement
+## Configuration and Seeding
 
-## 3. Exploration Mechanics Framework
+### Seed System
+World generation supports multiple seed input methods:
+1. Command line: `python main.py --seed "MyWorld"`
+2. Environment variable: `HEX_WORLD_SEED=12345`
+3. String seeds are deterministically hashed for consistency
+4. Random generation if no seed specified
 
-### Visibility and Movement Rules
-
-Adjacent-only movement: Prevents teleportation, creates natural exploration flow
-Visibility ranges: Some hexes might be visible but not explorable until you get closer
-Terrain-based movement costs: Different terrains take different amounts of "time" to traverse
-Line of sight: Hills/mountains might reveal distant hexes without full exploration
-
-### Discovery Progression System
-
-Initial Survey: Basic terrain type visible from adjacent hexes
-Surface Exploration: Reveals obvious features, common encounters
-Deep Exploration: Requires time investment, reveals hidden features
-Seasonal Revisits: Same hex might have different content in different seasons
-
-## 4. AI Integration Architecture
-
-### Knowledge Base Structure
-
-World Bible: Core lore, major NPCs, historical events, political situations
-Dynamic Context: Current world state, recent player actions, ongoing storylines
-Encounter Templates: Structured prompts for different encounter types
-Consistency Rules: Guidelines to maintain narrative coherence
-
-### API Integration Points
-
-Pre-encounter Generation: Create encounters when hexes are first explored
-Real-time Narrative: Generate descriptions and NPC dialogue during play
-Consequence Processing: How player actions affect future encounters
-Story Arc Management: Tracking and advancing longer narrative threads
-
-## 5. Rule System Integration
-
-### GURPS-Compatible Framework
-
-Skill Check Integration: When exploration requires specific skills
-Combat Encounter Scaling: Adjust difficulty based on party capabilities
-Character Progression Tracking: How exploration contributes to advancement
-Equipment/Resource Management: Weight, durability, supply consumption
-
-### Random Generation Tables
-
-Encounter Probability: By terrain type, time of day, weather conditions
-Treasure Generation: Appropriate to location and encounter difficulty
-NPC Generation: Quick stats and motivations for random encounters
-Environmental Hazards: Natural dangers appropriate to each biome
-
-## 6. User Interface Considerations
-
-### Map Display Features
-
-Zoom Levels: Regional overview down to individual hex detail
-Layer Toggles: Show/hide different information types
-Annotation System: Player notes, markers, waypoints
-Path Planning: Visual route planning with movement cost calculation
-
-### Data Management Interface
-
-Hex Detail Panels: Expandable information display
-Search/Filter Functions: Find specific locations or encounter types
-Export Functions: Generate reports, share discoveries
-Backup Management: Save/load different campaign states
-
-## Implementation Phases
-
-### Phase 1: Foundation
-
-Basic hex grid with coordinate system
-Simple JSON data storage for hex properties
-Adjacent-movement validation
-Basic terrain type display
-
-### Phase 2: Content System
-
-Encounter table framework
-Dynamic content generation
-Discovery state tracking
-Simple AI API integration for descriptions
-
-### Phase 3: Advanced Features
-
-Weather and seasonal systems
-Complex encounter chains
-NPC relationship tracking
-Campaign timeline management
-
-### Phase 4: Full Integration
-
-Complete GURPS rule integration
-Advanced AI storytelling
-Multi-campaign support
-Sharing/collaboration features
-
-## Key Design Decisions to Consider
-
-Scalability: How large do you want your world? This affects data storage and loading strategies.
-Randomness vs. Authorial Control: Balance between procedural generation and hand-crafted content.
-Player Agency: How much should players be able to modify the world permanently?
-Campaign Continuity: How to handle world changes across multiple play sessions or different parties.
-Performance: Large hex grids with rich data can become memory-intensive.
-Would you like me to dive deeper into any of these areas, or shall we start working through the specific data structures you'll need for your hex content system?
-
-
-## Window/Viewport Management SystemViewport Strategy
-
-Active Grid Window: Load only hexes visible in current viewport (e.g., 21x21 hex grid for detail view)
-Buffer Zone: Keep 1-2 hex rings around viewport loaded for smooth scrolling
-Zoom Levels:
-
-Regional (1 hex = large area, shows major terrain types)
-Local (standard hex detail)
-Tactical (if you want sub-hex detail later)
-
-
-## Memory Management
-
-Lazy Loading: Only load JSON when hex enters buffer zone
-Unload Strategy: Remove hex data when it's 3+ rings outside viewport
-Cache Recent: Keep recently visited hexes in memory longer
-Preload Adjacent: When player moves, preload in movement direction
-
-
-## Initial File Structure
-
+### File Structure
 ```
-/Worlds/
-  /CampaignName/
-    /world_config.json          # World generation settings, master data
-    /party_state.json     # Current party position and status
-    /hexes/
-      /0000_0000.json          # Hex at coordinate 0,0
-      /0001_0000.json          # Hex at coordinate 1,0
-      /-0001_0002.json         # Negative coordinates supported
-    /templates/
-      /encounters/             # Encounter table templates
-      /terrain/               # Terrain type definitions
-      /creatures/             # Creature stat blocks
-      /settlements/           # Settlement templates
-    /campaign_state.json       # Current session, player position, global timers
-    /world_timeline.json       # Major events, NPC death/respawn timers
+hex_explorer/
+├── saves/                  # World save files
+│   └── edits/             # Individual hex edit files
+├── core/                  # Core game engine
+├── data/                  # Data models and persistence
+├── generation/            # Procedural generation systems
+├── mechanics/             # Game mechanics (exploration, movement)
+├── ui/                    # User interface components
+├── config.py              # Global configuration
+└── main.py               # Application entry point
 ```
 
-## Initial Hex structure
+## Current Status
 
-To be adjusted as new data types are understood
+The game currently implements:
+- ✅ Infinite procedural world generation
+- ✅ Realistic terrain clustering and transitions
+- ✅ Complete settlement system with 12 settlement types
+- ✅ Interactive hex editing with persistent storage
+- ✅ Memory-efficient viewport system
+- ✅ Save/load functionality for world states
+- ✅ Comprehensive UI with multiple information panels
+- ✅ Unicode symbol support for settlement display
 
-```
-{
-  "coordinate": {"x": 0, "y": 0},
-  "terrain": {
-    "primary": "forest",
-    "secondary": "hills",
-    "special_features": ["ancient_ruins", "hidden_spring"]
-  },
-  "discovery": {
-    "visible": true,
-    "explored": false,
-    "exploration_level": 0,  // 0=unexplored, 1=surface, 2=thorough
-    "last_visited": "2024-03-15",
-    "discovery_notes": []
-  },
-  "inhabitants": {
-    "permanent": [
-      {"id": "orc_tribe_001", "type": "orc_tribe", "status": "active", "population": 45}
-    ],
-    "temporary": [
-      {"id": "traveling_merchant", "expires": "2024-03-20", "type": "merchant"}
-    ],
-    "respawn_queue": [
-      {"original_id": "orc_chief_grimfang", "respawn_date": "2024-04-01", "replacement_type": "orc_chief"}
-    ]
-  },
-  "resources": {
-    "harvestable": ["iron_ore", "medicinal_herbs"],
-    "treasure": [],
-    "consumed": ["silver_vein"]  // Track what's been depleted
-  },
-  "encounters": {
-    "recent": [],  // Track recent encounters to avoid repetition
-    "scripted": [], // Special one-time events
-    "tables": ["forest_day", "hills_generic"]  // Which encounter tables apply
-  },
-  "modifications": {
-    "player_changes": [],  // Campsites, markers, cleared paths
-    "environmental": [],   // Seasonal changes, disasters
-    "history": []         // Major events that happened here
-  }
-}
-```
+### Planned Features
+- 🔄 GURPS rule integration for movement and exploration
+- 🔄 AI-generated descriptions and narratives
+- 🔄 Encounter system with terrain-based tables
+- 🔄 NPC and creature lifecycle management
+- 🔄 Media support (images and audio) in hex editor
+- 🔄 Campaign timeline and world events
 
-## NPC/Creature Lifecycle System
+## Getting Started
 
-### Death and Respawn Framework
+1. **Install Dependencies**: Ensure pygame and tkinter are installed
+2. **Run the Game**: `python main.py`
+3. **Optional Seed**: `python main.py --seed "YourWorldName"`
+4. **Explore**: Use arrow keys to navigate, right-click hexes to edit
+5. **Save/Load**: Use Ctrl+S/Ctrl+L to save and load world states
 
-Individual NPCs: Named characters stay dead unless special resurrection
-Organizational Roles: Leadership positions get filled by new randomly generated characters
-Population Groups: Tribes/settlements have resilience based on remaining population
-Territory Preference: Each creature type has preferred terrain/biome weightings
+## Development
 
-### Respawn Logic
+The codebase follows PEP 8 standards and DRY principles with:
+- **Modular Architecture**: Clear separation of concerns across modules
+- **Type Hints**: Comprehensive type annotations for better code clarity
+- **Configurable Settings**: All game parameters centralized in `config.py`
+- **Extensible Design**: Easy to add new terrain types, settlement types, or mechanics
 
-Immediate: Some creatures respawn quickly (bandits, wild animals)
-Seasonal: Migrating creatures return at specific times
-Conditional: Some require specific triggers (new orc chief needs 10+ orcs surviving)
-Never: Unique NPCs, ancient guardians, plot-critical characters
-
-```
-// In world_timeline.json
-{
-  "events": [
-    {
-      "date": "2024-04-01",
-      "type": "npc_respawn",
-      "location": {"x": 5, "y": -3},
-      "details": {
-        "replacing": "orc_chief_grimfang",
-        "new_name": "generated_on_trigger",
-        "prerequisites_met": true
-      }
-    }
-  ]
-}
-```
-
-## File Management
-
-Hex Exists Check: Before generating, check if JSON file exists
-Partial Loading: Load only necessary sections for zoom level
-Background Saving: Save modified hexes during idle moments
-Error Recovery: Backup/restore for corrupted files
-
-## Integration Points for Future Features
-
-AI Story Generation Hooks
-
-Context Building: Gather data from current hex + adjacent hexes + world state
-Encounter Seeding: Use hex data to create appropriate AI prompts
-Consistency Checking: Track AI-generated content to maintain world coherence
-
-## GURPS Rule Integration Points
-
-Movement Costs: Terrain-based travel time calculations
-Encounter Difficulty: Scale based on party level and hex danger rating
-Resource Management: Track supplies, equipment wear from terrain
-
-## Campaign Management
-
-Session Boundaries: Save complete world state between sessions
-Multiple Parties: Different discovery states for different groups
-Time Advancement: Global timeline affecting all hexes
-
-Complete visibility into your world data while keeping memory usage manageable. Each hex is self-contained but references shared templates and world state. You can easily inspect, modify, or debug individual locations, and the system scales well as your world grows.
-
-
-## UI Design
-
-I'm thinking that a viewport for the hexes with a control panel of sorts on the right that lists the character(s) in the party and possibly a graphic associated with the encounter, table, or terrain.    
-
-We could swap out the hex view port for a combat graphic if there is combat, etc.
-
-We want logic in generation.    For example, a river wouldn't be in a desert.  MOuntains might clump together, then be foothills or rivers, and rivers would lead to lakes, etc.
-
-Procedural Logic should follow something related to normal earth biomes
-
-Basic Types: Plains, Forest, Hills, Mountains, Water, Desert
-
-### Simple Rules:
-- Water clusters (lakes, rivers)
-- Mountains cluster with hills around edges
-- Desert stays away from water
-- Forest likes moderate areas
-- Plains fill remaining space
-
-### Mountain Rules:
-- Mountains cluster together
-- Generate foothills 1-2 hexes out from mountains
-- Rivers originate in mountains
-- Desert unlikely adjacent to mountains
-
-### Water Rules:
-- Rivers follow downhill paths (mountains → plains → lakes)
-- Lakes form in low areas
-- Rivers don't split (except deltas)
-- Water bodies connect logically
-
-### Climate Rules:
-- Desert clusters together
-- Forest avoids desert adjacency
-- Swamps near water in warm areas
-- Tundra at climate extremes
-
-### Transition Rules:
-- Gradual transitions (no desert next to snow)
-- Elevation changes gradually
-- Climate zones blend at edges
-
-If neighbor is Forest: Forest=40%, Plains=30%, Hills=20%, Other=10%
-If neighbor is Mountain: Hills=50%, Mountain=30%, Forest=15%, Other=5%
-If neighbor is Water: Plains=40%, Forest=25%, Water=20%, Hills=15%
-
-### Hex Numbering
-
-The MVP is using colored hexes, but eventually we will use tile icons that have much greater detail.
-
-```
-// Hex file: 0015_0007.json (coordinates)
-{
-  "coordinate": {"x": 15, "y": 7},
-  "display_id": "015007",  // Generated from your numbering system xxx + yyy
-  "terrain": "forest",
-  "ambience": "data/forests/forest1.mp3",
-  "bg_images": ["001.png", "004.png"],
-  "maps":  ["701.png", "714.png"],
-  "specials": ["elves","rabid boars", "werewolves"],
-  "settlement": "village of ratiki",
-  // ... rest of hex data
-}
-```
-
-## Non Terrain Features
-
-### Density
-
-Each hex is approxiamtely 6 miles.
-
-Medieval Settlement Density
-Based on historical medieval demographics:
-Rural Areas (Plains/Forest):
-
-1 village (200-800 people) per 2-4 hexes
-2-6 farmsteads per hex
-1 manor house per 1-2 hexes
-
-### Resource-Rich Areas (Rivers/Crossroads):
-
-1 town (800-3000 people) per 6-12 hexes
-More frequent villages
-Market towns at river crossings
-
-### Cities (3000+ people):
-
-Very rare - maybe 1 per 50-100 hexes
-Always near major resources (rivers, harbors, trade routes)
-Regional capitals, major ports, magical centers
-
-### Ruins
-
-LIke manors or farmsteads but with different content such as ghosts, necromancers, etc
-
-### Cave Systems
-
-TBD but would have a more monstrous table such as orcs, goblins, trolls, bears, dragons, etc
-
-### Deep Forest Camps
-
-TBD but could have a table of bandits, monsters, druids, etc
-
-## Details of Non Terrain
-
-Proposed to have UI "popup" when a hex is clicked.    User enters new UI with details such as a map/image of the area and notes.    This allows for cities/mines/ruins/caves/dungeons/camps to be generated or created and persistent with cohesive story lines.
-
+Each hex is approximately 6 miles across, creating a realistic scale for medieval fantasy exploration and settlement density.

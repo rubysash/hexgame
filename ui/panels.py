@@ -285,6 +285,24 @@ class UIPanel:
             f"Terrain: {hex_obj.terrain.display_name}",
         ]
         
+        # Check for edit data
+        has_edit = hasattr(hex_obj, 'edit_data') and hex_obj.edit_data
+        
+        # Add custom name if present
+        if has_edit and hex_obj.edit_data.custom_name:
+            lines.insert(0, hex_obj.edit_data.custom_name)  # Add at top
+            lines[1] = f"Location: ({hex_obj.q}, {hex_obj.r})"  # Change label
+        
+        # Add custom description if present
+        if has_edit and hex_obj.edit_data.description:
+            lines.append("")  # Blank line
+            # Split long descriptions into multiple lines
+            desc_lines = hex_obj.edit_data.description.split('\n')
+            for line in desc_lines[:3]:  # Limit to 3 lines
+                if len(line) > 50:
+                    line = line[:47] + "..."
+                lines.append(line)
+        
         # Add settlement info if present
         if hex_obj.has_settlement:
             settlement = hex_obj.settlement_data
@@ -307,12 +325,29 @@ class UIPanel:
             if settlement.trade_goods:
                 goods_text = ", ".join(settlement.trade_goods[:3])  # Limit to 3
                 lines.append(f"Trade: {goods_text}")
-        else:
+        elif not (has_edit and hex_obj.edit_data.description):
+            # Only show terrain description if no custom description
             lines.append(hex_obj.terrain.description)
+        
+        # Add notes if present (abbreviated)
+        if has_edit and hex_obj.edit_data.notes:
+            lines.append("")  # Blank line
+            notes = hex_obj.edit_data.notes
+            if len(notes) > 60:
+                notes = notes[:57] + "..."
+            lines.append(f"Notes: {notes}")
         
         # Add exploration status if explored
         if hex_obj.discovery_data.explored:
             lines.append(f"Exploration Level: {hex_obj.discovery_data.exploration_level}")
+        
+        # Add edit indicator
+        if has_edit:
+            lines.append("")  # Blank line
+            lines.append("[EDITED - Right-click to modify]")
+        else:
+            lines.append("")
+            lines.append("[Right-click to edit]")
         
         # Calculate tooltip size
         max_width = max(self.tooltip_font.size(line)[0] for line in lines if line)
@@ -338,20 +373,27 @@ class UIPanel:
         # Draw background
         tooltip_rect = pygame.Rect(tooltip_x, tooltip_y, tooltip_width, tooltip_height)
         pygame.draw.rect(self.screen, (10, 10, 10, 240), tooltip_rect)
-        pygame.draw.rect(self.screen, (70, 130, 180), tooltip_rect, 2)
+        
+        # Different border color for edited hexes
+        border_color = (100, 200, 100) if has_edit else (70, 130, 180)
+        pygame.draw.rect(self.screen, border_color, tooltip_rect, 2)
         
         # Draw text
         for i, line in enumerate(lines):
             if line:  # Skip empty lines for spacing
                 color = Config.TEXT_COLOR
-                if "Settlement:" in line:
+                if has_edit and i == 0 and hex_obj.edit_data.custom_name:
+                    color = (100, 255, 100)  # Green for custom name
+                elif "Settlement:" in line:
                     color = (255, 215, 0)  # Gold for settlement name
                 elif line.startswith("  •"):
                     color = (180, 180, 180)  # Gray for features
+                elif "[" in line and "]" in line:
+                    color = (150, 150, 150)  # Gray for instructions
                 
                 text = self.tooltip_font.render(line, True, color)
                 self.screen.blit(text, (tooltip_x + 10, tooltip_y + 5 + i * 20))
-    
+
     def toggle_legend(self):
         """Toggle legend visibility"""
         self.show_legend = not self.show_legend

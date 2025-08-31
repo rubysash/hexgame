@@ -4,7 +4,7 @@ data/hex_editor.py - Hex editing data management
 
 import json
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
@@ -22,7 +22,8 @@ class HexEditData:
     custom_name: str = ""
     description: str = ""
     notes: str = ""
-    
+    notable_npcs: List[Dict[str, str]] = field(default_factory=list)
+
     # Override flags
     override_terrain: bool = False
     override_settlement: bool = False
@@ -64,6 +65,7 @@ class HexEditData:
             self.notes or 
             self.override_terrain or 
             self.override_settlement or
+            self.notable_npcs or 
             self.explored is not None
         )
 
@@ -108,6 +110,9 @@ class HexEditorManager:
         try:
             with open(file_path, 'r') as f:
                 data = json.load(f)
+                # Ensure notable_npcs exists even for old saves
+                if 'notable_npcs' not in data:
+                    data['notable_npcs'] = []
                 edit_data = HexEditData.from_dict(data)
                 self._cache[key] = edit_data
                 return edit_data

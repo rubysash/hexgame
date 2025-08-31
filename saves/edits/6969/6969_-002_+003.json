@@ -1,0 +1,27 @@
+{
+  "q": -2,
+  "r": 3,
+  "custom_name": "",
+  "description": "Some Description\t\nWith newlines",
+  "notes": "Added some notes too",
+  "notable_npcs": [
+    {
+      "name": "Grom STrom",
+      "role": "Placeholder",
+      "personality": "Just sits there",
+      "goals": "Be useful, demo 1"
+    }
+  ],
+  "override_terrain": false,
+  "override_settlement": false,
+  "terrain_type": null,
+  "settlement_name": null,
+  "settlement_type": null,
+  "settlement_population": null,
+  "explored": false,
+  "exploration_level": 0,
+  "image_files": [],
+  "audio_file": null,
+  "last_edited": "2025-08-31T13:13:28.553180",
+  "version": 1
+}

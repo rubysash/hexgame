@@ -29,7 +29,8 @@ class HexEditorWindow:
         self.hex_obj = hex_obj
         self.on_save = on_save
         self.edit_data = edit_data or HexEditData(q=hex_obj.q, r=hex_obj.r)
-        
+        self.npc_frames = []
+
         # Create root window if none exists
         if parent is None:
             try:
@@ -169,7 +170,29 @@ class HexEditorWindow:
         # Override options
         override_frame = ttk.LabelFrame(main_frame, text="Override Options", padding="5")
         override_frame.grid(row=5, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+
+        # NPCs section
+        npc_frame = ttk.LabelFrame(main_frame, text="Notable NPCs", padding="5")
+        npc_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        npc_frame.columnconfigure(0, weight=1)
         
+        # NPC container with scrollbar
+        canvas = tk.Canvas(npc_frame, height=150)
+        scrollbar = ttk.Scrollbar(npc_frame, orient="vertical", command=canvas.yview)
+        self.npc_container = ttk.Frame(canvas)
+        
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas_frame = canvas.create_window((0, 0), window=self.npc_container, anchor="nw")
+        
+        canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
+        # Add NPC button
+        ttk.Button(npc_frame, text="Add NPC", command=self._add_npc).grid(row=1, column=0, pady=5)
+        
+        # Update button frame row from 6 to 7
+        #button_frame.grid(row=7, column=0, columnspan=2, pady=(20, 0))
+
         # Explored checkbox
         self.explored_var = tk.BooleanVar()
         self.explored_check = ttk.Checkbutton(override_frame, text="Mark as Explored", 
@@ -187,7 +210,7 @@ class HexEditorWindow:
         
         # Button frame
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=6, column=0, columnspan=2, pady=(20, 0))
+        button_frame.grid(row=7, column=0, columnspan=2, pady=(20, 0))
         
         # Save button
         self.save_button = ttk.Button(button_frame, text="Save", command=self._save)
@@ -228,6 +251,11 @@ class HexEditorWindow:
             else:
                 # Use current hex state
                 self.exploration_var.set(self.hex_obj.discovery_data.exploration_level)
+            
+            # ADD THIS NEW CODE HERE - Load NPCs
+            if self.edit_data.notable_npcs:
+                for npc_data in self.edit_data.notable_npcs:
+                    self._add_npc(npc_data)
         else:
             # Load from hex if no edit data
             self.explored_var.set(self.hex_obj.discovery_data.explored)
@@ -246,7 +274,47 @@ class HexEditorWindow:
         """Mark that changes have been made"""
         self.has_changes = True
         self.status_label.config(text="Unsaved changes", foreground="orange")
+
+    def _add_npc(self, npc_data=None):
+        """Add a new NPC input frame"""
+        frame = ttk.Frame(self.npc_container, relief=tk.RIDGE, borderwidth=1)
+        frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Create input fields
+        ttk.Label(frame, text="Name:").grid(row=0, column=0, sticky=tk.W)
+        frame.name_var = tk.StringVar(value=npc_data.get('name', '') if npc_data else '')
+        ttk.Entry(frame, textvariable=frame.name_var, width=25).grid(row=0, column=1, padx=5)
+        
+        ttk.Label(frame, text="Role:").grid(row=0, column=2, sticky=tk.W)
+        frame.role_var = tk.StringVar(value=npc_data.get('role', '') if npc_data else '')
+        ttk.Entry(frame, textvariable=frame.role_var, width=25).grid(row=0, column=3, padx=5)
+        
+        ttk.Label(frame, text="Personality:").grid(row=1, column=0, sticky=tk.W)
+        frame.personality_var = tk.StringVar(value=npc_data.get('personality', '') if npc_data else '')
+        ttk.Entry(frame, textvariable=frame.personality_var, width=58).grid(row=1, column=1, columnspan=3, padx=5)
+        
+        ttk.Label(frame, text="Goals:").grid(row=2, column=0, sticky=tk.W)
+        frame.goals_var = tk.StringVar(value=npc_data.get('goals', '') if npc_data else '')
+        ttk.Entry(frame, textvariable=frame.goals_var, width=58).grid(row=2, column=1, columnspan=3, padx=5)
+        
+        # Delete button
+        ttk.Button(frame, text="Remove", command=lambda: self._remove_npc(frame)).grid(row=0, column=4, padx=5)
+        
+        # Track changes
+        frame.name_var.trace('w', lambda *args: self._mark_changed())
+        frame.role_var.trace('w', lambda *args: self._mark_changed())
+        frame.personality_var.trace('w', lambda *args: self._mark_changed())
+        frame.goals_var.trace('w', lambda *args: self._mark_changed())
+        
+        self.npc_frames.append(frame)
+        self._mark_changed()
     
+    def _remove_npc(self, frame):
+        """Remove an NPC frame"""
+        self.npc_frames.remove(frame)
+        frame.destroy()
+        self._mark_changed()
+
     def _clear_all(self):
         """Clear all fields"""
         result = messagebox.askyesno(
@@ -273,7 +341,19 @@ class HexEditorWindow:
             # Update exploration data
             self.edit_data.explored = self.explored_var.get()
             self.edit_data.exploration_level = self.exploration_var.get()
-            
+
+            # Save NPCs
+            self.edit_data.notable_npcs = []
+            for frame in self.npc_frames:
+                npc_data = {
+                    'name': frame.name_var.get().strip(),
+                    'role': frame.role_var.get().strip(),
+                    'personality': frame.personality_var.get().strip(),
+                    'goals': frame.goals_var.get().strip()
+                }
+                if npc_data['name']:  # Only save if name exists
+                    self.edit_data.notable_npcs.append(npc_data)
+
             # Call save callback
             if self.on_save:
                 success = self.on_save(self.edit_data)

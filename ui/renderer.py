@@ -39,6 +39,7 @@ class HexRenderer:
     
     def __init__(self, hex_size: int = 35):
         self.hex_size = hex_size
+        self.update_dimensions()
         self.hex_height = hex_size * 2
         self.hex_width = math.sqrt(3) * hex_size
         self.font = None
@@ -162,6 +163,16 @@ class HexRenderer:
             print(f"  ... and {len(available_fonts) - 20} more")
         
         return available_fonts
+
+    def update_dimensions(self):
+        """Recalculate dimensions when hex_size changes"""
+        self.hex_height = self.hex_size * 2
+        self.hex_width = math.sqrt(3) * self.hex_size
+    
+    def set_hex_size(self, new_size: int):
+        """Update hex size for zoom"""
+        self.hex_size = new_size
+        self.update_dimensions()
 
     def draw_settlement_icon(self, surface: pygame.Surface, center_x: float, 
                         center_y: float, settlement_type: SettlementType, population: int = 0):

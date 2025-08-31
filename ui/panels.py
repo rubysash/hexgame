@@ -63,7 +63,7 @@ class UIPanel:
                          (0, 40), (Config.SCREEN_WIDTH, 40), 2)
         
         # Instructions
-        instructions = "Arrow Keys: Move | Shift: Fast | Space: Reset | Ctrl+S: Save | Ctrl+L: Load | N: Toggle Names | ESC: Quit"
+        instructions = "Arrows: Move | +/-: Zoom | 0: Reset Zoom | Space: Reset | N: Names | ESC: Quit"
         text = self.ui_font.render(instructions, True, Config.TEXT_COLOR)
         self.screen.blit(text, (10, 10))
         

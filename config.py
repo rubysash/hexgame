@@ -41,9 +41,19 @@ class Config:
     SHOW_SEED_IN_TITLE = True  # Display seed in window title
     
     # GURPS integration
-    MOVEMENT_POINTS_PER_DAY = 8
+    MOVEMENT_POINTS_PER_DAY = 20
     BASE_VISIBILITY_RANGE = 3
+
+    # Add zoom configuration
+    MIN_HEX_SIZE = 15  # Minimum hex size when zoomed out
+    MAX_HEX_SIZE = 60  # Maximum hex size when zoomed in
+    DEFAULT_HEX_SIZE = 35  # Starting hex size
+    ZOOM_STEP = 5  # How much to change hex size per zoom
     
+    # Update viewport to adjust with zoom
+    BASE_VIEWPORT_RADIUS = 15  # Base radius at default zoom
+    BASE_BUFFER_RADIUS = 20
+
     @classmethod
     def ensure_directories(cls):
         """Ensure required directories exist"""

@@ -15,8 +15,8 @@ class Viewport:
     
     def __init__(self, world: World, radius: int = 15, buffer: int = 20):
         self.world = world
-        self.radius = radius  # Viewport radius
-        self.buffer_radius = buffer  # Buffer zone for smooth scrolling
+        self.radius = radius  # Make these changeable
+        self.buffer_radius = buffer
         self.center = HexCoordinate(0, 0)
         self.loaded_coords: Set[Tuple[int, int]] = set()
         

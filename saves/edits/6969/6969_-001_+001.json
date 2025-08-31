@@ -1,0 +1,27 @@
+{
+  "q": -1,
+  "r": 1,
+  "custom_name": "",
+  "description": "Grom lives here",
+  "notes": "",
+  "notable_npcs": [
+    {
+      "name": "Grom Orion",
+      "role": "Booboohead",
+      "personality": "Yup",
+      "goals": "none"
+    }
+  ],
+  "override_terrain": false,
+  "override_settlement": false,
+  "terrain_type": null,
+  "settlement_name": null,
+  "settlement_type": null,
+  "settlement_population": null,
+  "explored": false,
+  "exploration_level": 0,
+  "image_files": [],
+  "audio_file": null,
+  "last_edited": "2025-08-31T13:47:06.910074",
+  "version": 1
+}

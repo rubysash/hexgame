@@ -37,12 +37,12 @@ SETTLEMENT_COLORS = {
 
 # Settlement density by terrain (chance per hex)
 SETTLEMENT_CHANCES = {
-    TerrainType.PLAINS: 0.15,     # 15% chance in plains hexes
-    TerrainType.FOREST: 0.08,     # 8% chance in forest hexes
-    TerrainType.HILLS: 0.12,      # 12% chance in hills hexes
-    TerrainType.MOUNTAINS: 0.05,  # 5% chance in mountain hexes
-    TerrainType.WATER: 0.18,      # 18% chance near water
-    TerrainType.DESERT: 0.02,     # 2% chance in desert
+    TerrainType.PLAINS: 0.40,     # Was 0.15
+    TerrainType.FOREST: 0.20,     # Was 0.08
+    TerrainType.HILLS: 0.30,      # Was 0.12
+    TerrainType.MOUNTAINS: 0.10,  # Was 0.05
+    TerrainType.WATER: 0.45,      # Was 0.18
+    TerrainType.DESERT: 0.05,     # Was 0.02
 }
 
 # Settlement type weights by terrain

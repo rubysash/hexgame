@@ -48,15 +48,25 @@ class HexGridGame:
         
         # Initialize game components with seed
         self.world = World(world_seed)
-        self.viewport = Viewport(self.world, Config.VIEWPORT_RADIUS, Config.BUFFER_RADIUS)
-        self.renderer = HexRenderer(Config.HEX_SIZE)
+        
+        # Add zoom level tracking
+        self.current_hex_size = Config.DEFAULT_HEX_SIZE
+        self.renderer = HexRenderer(self.current_hex_size)
         self.renderer.init_fonts()
+        
+        # Dynamic viewport radius based on zoom
+        self.update_viewport_radius()
+        
+        # Create viewport with dynamic radius
+        self.viewport = Viewport(self.world, self.viewport_radius, self.buffer_radius)
+        
+        # UI components
         self.ui_panel = UIPanel(self.screen, self.renderer)
-    
+        
         # Store seed for display/saving
         self.world_seed = world_seed
         
-        # UI components
+        # Camera and position tracking
         self.camera_x = Config.SCREEN_WIDTH // 2
         self.camera_y = Config.SCREEN_HEIGHT // 2
         self.current_center = HexCoordinate(0, 0)
@@ -73,9 +83,12 @@ class HexGridGame:
         self._init_tkinter()
         
         print(f"Hex Explorer initialized with seed: {world_seed}")
+        '''
         print("Controls:")
         print("  Arrow Keys: Move camera")
         print("  Shift + Arrow: Fast movement")
+        print("  +/- Keys: Zoom in/out")
+        print("  0: Reset zoom")
         print("  Right-Click: Edit hex")
         print("  E (on hover): Edit hex")
         print("  Space: Reset to origin")
@@ -83,7 +96,20 @@ class HexGridGame:
         print("  Ctrl+S: Save world")
         print("  Ctrl+L: Load world")
         print("  ESC: Quit")
-    
+        '''
+
+    def update_viewport_radius(self):
+        """Adjust viewport radius based on zoom level"""
+        zoom_factor = Config.DEFAULT_HEX_SIZE / self.current_hex_size
+        self.viewport_radius = int(Config.BASE_VIEWPORT_RADIUS * zoom_factor)
+        self.buffer_radius = int(Config.BASE_BUFFER_RADIUS * zoom_factor)
+        
+        # Update viewport with new radius
+        if hasattr(self, 'viewport'):
+            self.viewport.radius = self.viewport_radius
+            self.viewport.buffer_radius = self.buffer_radius
+            self.viewport.update(self.current_center)
+
     def _init_tkinter(self):
         """Initialize hidden Tkinter root window"""
         try:
@@ -280,7 +306,36 @@ class HexGridGame:
         elif event.key == pygame.K_g:
             # Generate settlement statistics and print to console
             self.print_world_statistics()
-            
+        elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:
+            self.zoom_in()
+        elif event.key == pygame.K_MINUS:
+            self.zoom_out()
+        elif event.key == pygame.K_0:
+            self.reset_zoom()
+
+    def zoom_in(self):
+        """Zoom in (larger hexes, see less area)"""
+        if self.current_hex_size < Config.MAX_HEX_SIZE:
+            self.current_hex_size += Config.ZOOM_STEP
+            self.renderer.set_hex_size(self.current_hex_size)
+            self.update_viewport_radius()
+            print(f"Zoom in: Hex size {self.current_hex_size}, viewport radius {self.viewport_radius}")
+    
+    def zoom_out(self):
+        """Zoom out (smaller hexes, see more area)"""
+        if self.current_hex_size > Config.MIN_HEX_SIZE:
+            self.current_hex_size -= Config.ZOOM_STEP
+            self.renderer.set_hex_size(self.current_hex_size)
+            self.update_viewport_radius()
+            print(f"Zoom out: Hex size {self.current_hex_size}, viewport radius {self.viewport_radius}")
+    
+    def reset_zoom(self):
+        """Reset to default zoom level"""
+        self.current_hex_size = Config.DEFAULT_HEX_SIZE
+        self.renderer.set_hex_size(self.current_hex_size)
+        self.update_viewport_radius()
+        print(f"Reset zoom: Hex size {self.current_hex_size}")
+
     def update_mouse_hex(self, mouse_pos):
         """Update which hex the mouse is hovering over"""
         mx, my = mouse_pos

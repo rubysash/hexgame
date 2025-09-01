@@ -2,6 +2,8 @@
 
 A hex-based exploration and role-playing game featuring procedural world generation, settlement systems, and interactive hex editing. The world generates infinite terrain and settlements following realistic geographic rules, with a built-in editor for customization.
 
+Designed to assist with gameplay for various RPG games.
+
 ![Hex Explorer Demo](https://github.com/rubysash/hexgame/blob/main/mvp-demo.png?raw=true)
 
 ## Core Features
@@ -26,7 +28,10 @@ A hex-based exploration and role-playing game featuring procedural world generat
 - **Media Support**: Framework for adding images and audio (future expansion)
 - **Persistent Storage**: All edits saved as individual JSON files
 
-### 🎮 Game Controls
+### Game Controls
+
+Planned and working controls
+
 - **Arrow Keys**: Navigate the world
 - **Shift + Arrow**: Fast movement
 - **Right-Click/E**: Open hex editor for the hovered hex
@@ -119,14 +124,6 @@ The game currently implements:
 - ✅ Comprehensive UI with multiple information panels
 - ✅ Unicode symbol support for settlement display
 
-### Planned Features
-- 🔄 GURPS rule integration for movement and exploration
-- 🔄 AI-generated descriptions and narratives
-- 🔄 Encounter system with terrain-based tables
-- 🔄 NPC and creature lifecycle management
-- 🔄 Media support (images and audio) in hex editor
-- 🔄 Campaign timeline and world events
-
 ## Getting Started
 
 1. **Install Dependencies**: Ensure pygame and tkinter are installed
@@ -143,4 +140,48 @@ The codebase follows PEP 8 standards and DRY principles with:
 - **Configurable Settings**: All game parameters centralized in `config.py`
 - **Extensible Design**: Easy to add new terrain types, settlement types, or mechanics
 
-Each hex is approximately 6 miles across, creating a realistic scale for medieval fantasy exploration and settlement density.
+Each hex is approximately 1 mile across, creating a realistic scale for medieval fantasy exploration and settlement density.
+
+## Future Planned Notes
+
+### Primary Modifications
+
+Encounter tables
+
+### World Story Arcs
+
+Hierarchical relationships (parent organizations, sub-factions)
+Influence zones (which hexes/settlements are controlled/influenced)
+Relationship matrices (ally/enemy/neutral between factions)
+Timeline events (how these organizations change over time)
+Settlement affiliations (which settlements belong to which factions)
+
+### GM Controls
+
+A client-server architecture where the GM runs the authoritative world instance and clients receive viewport updates where the GM pushes camera positions to force client views.
+
+
+### Random Thoughts
+
+- GURPS rule integration for various aspects
+- AI-generated descriptions and narratives
+- Encounter system with terrain-based tables
+- NPC and creature lifecycle management
+- Media support (images and audio) in hex editor
+- Campaign timeline and world events
+- Search field for keywords, populations, trades, npcs, etc
+- clickable search results zoom to
+- clickable "top 3" zoom to
+- mousewheel zoom in/out keybind
+- audio/image ambience defaults + special edits
+- images on hex times vs just background color
+- print viewable section 
+- Change outline color or image if explored, exploration tracker
+- random encounters listed with gurps stats
+- gurps combat, with easy to use selectors
+- edit hex can place "specials"
+- verify ruins, watchtowers, etc in pool
+- verify all keybinds
+- sliders on population density
+- click hex, new map appears (cities, dungeons etc)
+- create/use character based on GURPS

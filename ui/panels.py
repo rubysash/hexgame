@@ -157,8 +157,8 @@ class UIPanel:
         """Draw settlement summary panel with top 3 largest settlements"""
         panel_x = 10
         panel_y = 60
-        panel_width = 320  # Increased width to accommodate longer settlement info
-        panel_height = 240  # Increased height for top 3 settlements
+        panel_width = 250  # Increased width to accommodate longer settlement info
+        panel_height = 260  # Increased height for top 3 settlements
         
         # Background
         pygame.draw.rect(self.screen, Config.UI_PANEL_COLOR,

@@ -28,36 +28,51 @@ The Hex Explorer is a pygame-based infinite world generator that creates realist
 - Campaign timeline and world events
 
 ## Architecture Overview
-
+### File Structure
 ```
-/hex_explorer/
-├── core/                   # Core game engine
-│   ├── hex_grid.py        # Hexagonal coordinate mathematics
-│   ├── world.py           # World state management and generation coordination
-│   └── viewport.py        # Memory-efficient hex loading system
-├── data/                   # Data models and persistence
-│   ├── models.py          # Core data structures (Hex, TerrainType, SettlementType)
-│   ├── hex_editor.py      # User edit data management and storage
-│   └── persistence.py     # World save/load functionality
-├── generation/             # Procedural generation systems
-│   ├── config_data.py     # Settlement symbols, colors, and generation data
-│   ├── terrain_generator.py # Terrain generation with geographic logic
-│   └── settlement_generator.py # Settlement placement and naming
-├── mechanics/              # Game mechanics (future expansion)
-│   ├── exploration.py     # Discovery and visibility mechanics
-│   └── movement.py        # Movement costs and pathfinding
-├── ui/                     # User interface components
-│   ├── game_window.py     # Main pygame window and game loop
-│   ├── renderer.py        # Hex and settlement rendering
-│   ├── panels.py          # UI information panels and displays
+hex_explorer/
+├── saves/                     # World save files
+│   └── edits/                # Individual hex edit files organized by world seed
+├── core/                     # Core game engine
+│   ├── __init__.py
+│   ├── hex_grid.py          # Hexagonal coordinate mathematics  
+│   ├── world.py             # World state management
+│   └── viewport.py          # Memory-efficient viewport system
+├── data/                     # Data models and persistence
+│   ├── __init__.py
+│   ├── models.py            # Core data structures (Hex, TerrainType, SettlementType)
+│   ├── hex_editor.py        # User edit data management
+│   └── persistence.py       # World save/load functionality
+├── docs/                     # Basic Docs
+│   ├── hex_sample.json     # possible hex data format, in flux
+|   └── project-skeleton.md  # Complete architecture documentation
+├── generation/              # Procedural generation systems
+│   ├── __init__.py
+│   ├── terrain_generator.py # Terrain generation with neighbor logic
+│   ├── settlement_generator.py # Settlement placement and naming
+│   └── config_data.py       # Settlement symbols, colors, and generation data
+├── mechanics/               # Game mechanics frameworks
+│   ├── __init__.py
+│   ├── exploration.py       # Discovery mechanics (basic framework)
+│   └── movement.py          # Movement costs and pathfinding (basic framework)
+├── ui/                      # User interface components
+│   ├── __init__.py
+│   ├── game_window.py       # Main pygame window and game loop
+│   ├── renderer.py          # Hex and settlement rendering
+│   ├── panels.py            # UI information panels
 │   └── hex_editor_window.py # Tkinter hex editor popup
-├── config.py              # Global configuration and seed management
-└── main.py               # Application entry point
+├── config.py                # Global configuration and seed management
+├── main.py                  # Application entry point
+├── hex_sample.json          # Example complete hex data structure
+
 ```
 
 ## Module Responsibilities
-
 ### Core Engine (`core/`)
+
+**__init__.py**: Package Initialization
+- Exports core classes: `HexCoordinate`, `World`, `Viewport`
+- Defines public API for core module
 
 **hex_grid.py**: Hexagonal Grid Mathematics
 - `HexCoordinate`: Axial coordinate system with conversion methods
@@ -75,14 +90,32 @@ The Hex Explorer is a pygame-based infinite world generator that creates realist
 - Buffer system for smooth scrolling
 - Memory optimization for infinite world exploration
 
+### Configuration System
+
+**config.py**: Global Configuration and Seed Management
+- `Config`: Global settings class with display, hex, and game configuration
+- Seed parsing with deterministic hashing for string seeds
+- Command-line argument processing and environment variable support
+- Directory management and file path configuration
+
+**main.py**: Application Entry Point
+- Application startup with enhanced seed handling
+- Integration of config system with game initialization
+- Command-line interface for seed specification
+
 ### Data Layer (`data/`)
 
-**models.py**: Core Data Structures
-- `TerrainType`: Enum with display properties, movement costs, and generation weights
-- `SettlementType`: Enum with population ranges, terrain preferences, and descriptions
+**__init__.py**: Package Initialization
+- Exports core data models: `Hex`, `TerrainType`, `TerrainData`, `DiscoveryData`
+- Avoids circular imports with selective exports
+
+**models.py**: Core Data Structures (Enhanced)
+- `TerrainType`: 6 terrain types with movement costs, colors, and descriptions
+- `SettlementType`: 12 settlement types including ruins and specialty settlements
 - `Hex`: Complete hex data model with terrain, settlements, and discovery tracking
 - `SettlementData`: Detailed settlement information with features and trade goods
 - `DiscoveryData`: Exploration state tracking
+- `TerrainData`, `InhabitantData`, `ResourceData`, `EncounterData`: Full data layer system
 
 **hex_editor.py**: Edit Data Management
 - `HexEditData`: User customization data structure
@@ -96,6 +129,9 @@ The Hex Explorer is a pygame-based infinite world generator that creates realist
 
 ### Generation Systems (`generation/`)
 
+**__init__.py**: Package Initialization
+- Exports generation classes: `TerrainGenerator`, `SettlementGenerator`
+
 **terrain_generator.py**: Terrain Generation
 - `TerrainGenerator`: Creates realistic terrain using neighbor influence weights
 - Geographic logic prevents unrealistic combinations (desert next to water)
@@ -106,43 +142,78 @@ The Hex Explorer is a pygame-based infinite world generator that creates realist
 - Generates appropriate names using terrain-based prefix/suffix combinations
 - Creates settlement details (population, prosperity, features, trade goods)
 
-**config_data.py**: Generation Configuration
-- Settlement symbols and colors for Unicode display
-- Terrain-based settlement chances and type weights
-- Extensive naming data with terrain-appropriate prefixes and suffixes
+**config_data.py**: Generation Configuration (Expanded)
+- Unicode settlement symbols with comprehensive fallback systems
+- Settlement color mapping for visual distinction
+- Terrain-based settlement density and type weight matrices
+- Extensive naming systems with 200+ prefixes and suffixes per terrain type
+- Settlement-type specific suffix collections for appropriate naming
 
 ### User Interface (`ui/`)
+
+**__init__.py**: Package Initialization
+- Exports UI classes: `HexRenderer`, `HexGridGame`, `UIPanel`
 
 **game_window.py**: Main Application
 - `HexGridGame`: Main pygame window and game loop
 - Event handling for movement, editing, and world interaction
 - Integrates all UI components and manages game state
+- Tkinter integration for file dialogs and hex editor
 
-**renderer.py**: Visual Rendering
+**renderer.py**: Visual Rendering (Enhanced)
 - `HexRenderer`: Draws hexes, terrain colors, and settlement symbols
-- Unicode font support with fallback systems for cross-platform compatibility
-- Configurable display options for settlements and coordinates
+- Advanced Unicode font detection and symbol compatibility testing
+- Dynamic settlement icon scaling based on population
+- Comprehensive font fallback system for cross-platform compatibility
+- Edit indicator rendering for modified hexes
 
-**panels.py**: Information Display
+**panels.py**: Information Display (Expanded)
 - `UIPanel`: Manages all UI information panels
-- Settlement summary with largest settlements
-- Terrain legend and world statistics
-- Detailed tooltips with settlement and edit information
+- Top 3 largest settlements display with coordinates and population
+- Comprehensive world statistics with terrain distribution
+- Enhanced tooltips showing edit data, settlement details, and exploration status
+- Toggle-able UI panels for different information views
 
 **hex_editor_window.py**: Hex Editing Interface
 - `HexEditorWindow`: Tkinter-based popup editor for hex customization
-- Fields for custom names, descriptions, notes, and exploration overrides
+- Fields for custom names, descriptions, notes, and NPC management
 - Validation and change tracking with auto-save functionality
+- Proper window lifecycle management and event processing
 
 ### Game Mechanics (`mechanics/`)
 
-**exploration.py**: Discovery System
-- `ExplorationManager`: Manages exploration levels and visibility
-- Framework for future line-of-sight and discovery mechanics
+**__init__.py**: Package Initialization
+- Exports mechanics classes: `ExplorationManager`, `MovementManager`
 
-**movement.py**: Movement System
-- `MovementManager`: Calculates movement costs based on terrain
-- A* pathfinding framework for future route planning
+**exploration.py**: Discovery System (Framework Implementation)
+- `ExplorationManager`: Basic exploration level tracking (0-2 scale)
+- Visibility range calculation framework
+- Surface and thorough exploration mechanics structure
+- Line-of-sight calculation framework (placeholder)
+
+**movement.py**: Movement System (Framework Implementation)
+- `MovementManager`: Terrain-based movement cost calculations
+- Reachable hex calculation with movement points
+- A* pathfinding framework structure (not fully implemented)
+- GURPS-compatible movement point system
+
+### Documentation Files
+
+**hex_sample.json**: Complete Hex Data Example
+- Comprehensive example showing all possible hex data fields
+- Settlement data with NPCs, trade goods, and features
+- Discovery tracking and exploration levels
+- Edit data structure with custom names and descriptions
+- Resource tracking and encounter data for future expansion
+
+**project-skeleton.md**: Complete Architecture Documentation
+- Detailed project overview and implementation status
+- Architecture principles and design patterns
+- Module responsibilities and interaction patterns
+- Configuration and seed management documentation
+- Game controls and user interface guide
+- File storage formats and data structures
+- Future expansion framework and planned features
 
 ## Key Design Principles
 

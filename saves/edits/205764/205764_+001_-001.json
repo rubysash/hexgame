@@ -1,0 +1,27 @@
+{
+  "q": 1,
+  "r": -1,
+  "custom_name": "Whatever Water",
+  "description": "Bhe bleh this is Description",
+  "notes": "Other Notes",
+  "notable_npcs": [
+    {
+      "name": "Person 1",
+      "role": "Placeholder",
+      "personality": "Wise Monk",
+      "goals": "Kill all grasshoppers"
+    }
+  ],
+  "override_terrain": false,
+  "override_settlement": false,
+  "terrain_type": null,
+  "settlement_name": null,
+  "settlement_type": null,
+  "settlement_population": null,
+  "explored": false,
+  "exploration_level": 0,
+  "image_files": [],
+  "audio_file": null,
+  "last_edited": "2025-08-31T21:42:45.520765",
+  "version": 1
+}

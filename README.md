@@ -4,7 +4,7 @@ A hex-based exploration and role-playing game featuring procedural world generat
 
 Designed to assist with gameplay for various RPG games, especially written for solo GURPS play/storywriting.
 
-![Hex Explorer Demo](https://github.com/rubysash/hexgame/blob/main/demo.v01.gif?raw=true)
+![Hex Explorer Demo](https://github.com/rubysash/hexgame/blob/main/demo/demo.v01.gif?raw=true)
 
 ## Core Features
 
